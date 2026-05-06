@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en" data-theme="chart">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gulf of Mexico Wave Field</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="titleBlock">
+        <div class="eyebrow">Static marine dashboard</div>
+        <h1>Gulf of Mexico Wave Field</h1>
+        <p class="subtitle">NOAA buoy observations from a local snapshot, with bundled coastlines and borders so the page can stay fully static.</p>
+      </div>
+      <div class="toolbar">
+        <button id="theme" class="secondary" title="Toggle theme">Chart</button>
+        <select id="units" title="Waves and wind units">
+          <option value="imperial" selected>Imperial</option>
+          <option value="metric">Metric</option>
+        </select>
+        <select id="tempUnits" class="secondary" title="Temperature units">
+          <option value="auto" selected>Temp: Auto</option>
+          <option value="F">Temp: degF</option>
+          <option value="C">Temp: degC</option>
+        </select>
+        <button id="reload" title="Reload local snapshot">Reload Snapshot</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="card hero">
+        <div class="cardHead">
+          <div>
+            <div class="cardTitle">Observation map</div>
+            <div class="cardHint">Marker size tracks wave height, color tracks dominant swell period.</div>
+          </div>
+          <div class="statusPill">Static source: <code>data/latest_obs.txt</code> via scheduled refresh</div>
+        </div>
+
+        <div class="chipRow" id="badges"></div>
+
+        <div class="mapFrame" id="dropZone">
+          <canvas id="c"></canvas>
+          <div class="dropHint">Drop a NOAA text snapshot here to refresh the map.</div>
+        </div>
+
+        <div class="below">
+          <div class="sectionLabel">Average dominant swell period by longitude bin</div>
+          <div id="periods" class="periodBar"></div>
+          <div id="legend" class="legend"></div>
+        </div>
+      </section>
+
+      <aside class="rail">
+        <section class="card side">
+          <div class="sectionTitle">Snapshot controls</div>
+          <div id="statusBox" class="statusBox">
+            <div id="statusText" class="statusText">Waiting for local snapshot.</div>
+            <div id="statusMeta" class="statusMeta">Expected file: <code>data/latest_obs.txt</code></div>
+          </div>
+
+          <div class="buttonGrid">
+            <button id="reloadAside">Reload Snapshot</button>
+            <button id="importBtn" class="secondary">Import File</button>
+            <button id="clearData" class="secondary">Clear Data</button>
+          </div>
+
+          <input id="filePicker" type="file" accept=".txt,text/plain" hidden>
+
+          <label class="fieldLabel" for="stations">Station filter</label>
+          <div class="row">
+            <input id="stations" type="text" placeholder="42001 42002 42035">
+            <button id="applyFilter" class="secondary">Apply</button>
+          </div>
+          <div class="hint">Use station ids separated by spaces or commas.</div>
+
+          <div class="sectionTitle compact">Paste raw text</div>
+          <textarea id="t" placeholder="# Paste latest_obs.txt here"></textarea>
+          <div class="row end">
+            <button id="resetFilter" class="ghost">Reset Filter</button>
+            <button id="parse" class="secondary">Load Paste</button>
+          </div>
+        </section>
+
+        <section class="card side">
+          <div class="sectionTitle">Snapshot summary</div>
+          <div class="metricGrid">
+            <div class="metric"><span class="metricLabel">Stations in view</span><span id="mStations" class="metricValue">--</span><span id="mStationsSub" class="metricSub">Waiting for data</span></div>
+            <div class="metric"><span class="metricLabel">Wave reports</span><span id="mWaves" class="metricValue">--</span><span id="mWavesSub" class="metricSub">Active observations</span></div>
+            <div class="metric"><span class="metricLabel">Max wave</span><span id="mMaxWave" class="metricValue">--</span><span id="mMaxWaveSub" class="metricSub">Peak sea state</span></div>
+            <div class="metric"><span class="metricLabel">Avg wave</span><span id="mAvgWave" class="metricValue">--</span><span id="mAvgWaveSub" class="metricSub">Across reporting stations</span></div>
+            <div class="metric"><span class="metricLabel">Strongest wind</span><span id="mWind" class="metricValue">--</span><span id="mWindSub" class="metricSub">Fastest sustained wind</span></div>
+            <div class="metric"><span class="metricLabel">Warmest water</span><span id="mWater" class="metricValue">--</span><span id="mWaterSub" class="metricSub">Surface water temp</span></div>
+            <div class="metric"><span class="metricLabel">Freshest obs</span><span id="mFresh" class="metricValue">--</span><span id="mFreshSub" class="metricSub">Newest station timestamp</span></div>
+            <div class="metric"><span class="metricLabel">Oldest obs</span><span id="mOld" class="metricValue">--</span><span id="mOldSub" class="metricSub">Earliest station timestamp</span></div>
+          </div>
+        </section>
+
+        <section class="card side">
+          <div class="sectionTitle">About this page</div>
+          <ul class="noteList">
+            <li>The map reads from <code>data/latest_obs.txt</code> when hosted as a static site.</li>
+            <li>A scheduled workflow can refresh that file every hour without adding a backend service.</li>
+            <li>If you open this page with <code>file://</code>, use Import File or drag in a NOAA text file to load fresh observations.</li>
+            <li>Land and borders are bundled from Natural Earth 1:50m geometry so the basemap stays local.</li>
+          </ul>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <div id="tip"></div>
+
+  <script src="./data/gulf-map-data.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
