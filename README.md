@@ -14,16 +14,20 @@ The workflow in `.github/workflows/refresh-noaa.yml` runs:
 
 - every hour at minute `25`
 - whenever you trigger it manually from the Actions tab
+- whenever you push to `main`
 
-On each run it:
+On scheduled or manual runs it:
 
 1. downloads `https://www.ndbc.noaa.gov/data/latest_obs/latest_obs.txt`
 2. replaces `data/latest_obs.txt`
 3. commits and pushes the file only if it changed
+4. deploys the site to GitHub Pages from the same workflow
 
-If this repo is hosted on a static platform that serves the branch contents, the site will pick up the new snapshot automatically on the next deploy or branch sync.
+On push runs, it skips the NOAA download and just deploys the current repository contents.
 
-## Smallest possible GitHub Pages setup
+This workflow-based deploy is important because commits pushed by `GITHUB_TOKEN` do not trigger a branch-based GitHub Pages rebuild.
+
+## GitHub Pages setup
 
 This folder already has the right shape for GitHub Pages:
 
@@ -31,32 +35,30 @@ This folder already has the right shape for GitHub Pages:
 - asset paths are relative, so it works from a project subpath
 - `.nojekyll` tells Pages to serve the files as plain static content
 
-To publish it with the fewest moving parts:
+To publish it with the current workflow:
 
 1. Push this folder to a GitHub repository
 2. Open `Settings`
 3. Open `Pages`
-4. Under `Build and deployment`, choose `Deploy from a branch`
-5. Set `Branch` to your default branch, usually `main`
-6. Set the folder to `/(root)`
-7. Save
+4. Under `Build and deployment`, choose `GitHub Actions`
+5. Save if GitHub prompts you to confirm the source
 
-That is enough to serve this exact folder through GitHub Pages. No separate Pages build workflow is required.
+The existing workflow handles both NOAA refreshes and Pages deployments.
 
 ## GitHub Actions setup
 
-For this workflow to push commits back to the repository, make sure Actions can write to the repo:
+For this workflow to push commits back to the repository and deploy Pages, make sure Actions can write to the repo:
 
 1. Open `Settings`
 2. Open `Actions` -> `General`
 3. Under `Workflow permissions`, choose `Read and write permissions`
 4. Save
 
-After that, the refresh workflow can update `data/latest_obs.txt`, push the change to `main`, and GitHub Pages will automatically serve the new snapshot.
+The workflow requests `contents: write`, `pages: write`, and `id-token: write` so it can update `data/latest_obs.txt`, push the change to `main`, and publish the updated site in the same run.
 
 ## Hosting notes
 
-- GitHub Pages: this is the smallest setup for this project, because the site can be served directly from the same branch the NOAA refresh workflow updates.
+- GitHub Pages: this is the most reliable setup for this project, because the NOAA refresh and site deploy happen in the same workflow run.
 - Cloudflare Pages: also works if it deploys from the updated branch.
 - Local file mode: if you open `index.html` with `file://`, browsers may block `fetch()` of `data/latest_obs.txt`. In that case, use a tiny static server or the page's import tools.
 
