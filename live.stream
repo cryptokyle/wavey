@@ -1,18 +1,18 @@
-┌── Alabama
-│  
-├────┬── Dauphin Island
-│    └── https://video.hazcams.com/dauphin-island-al-us-002/main_stream.m3u8
-│ 
-├────┬── Gulf Shores
-│    ├── https://video.hazcams.com/gulf-shores-al-us-001/main_stream.m3u8
-│    ├── BEACH CLUB YOUTUBE CAM -> <iframe width="816" height="459" src="https://www.youtube.com/embed/l2em7gqBj00" title="LIVE from The Beach Club" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-│    ├── ENCLAVE YOUTUBE CAM -> <iframe width="816" height="459" src="https://www.youtube.com/embed/g4fuUj6X7GY" title="The Enclave Orange Beach, AL" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-│
-├────┬── Orange Beach
-│    ├── https://video.hazcams.com/orange-beach-al-us-001/main_stream.m3u8
-│    ├── https://orangebeach.b-cdn.net/Alabama/orange-beach-holiday-inn.stream/chunklist.m3u8
-│    ├── JETTY YOUTUBE CAM -> <iframe width="816" height="459" src="https://www.youtube.com/embed/5Ijk8QsR-nw" title="🔴 LIVE CAM: Orange Beach, Alabama and the Gulf" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-│    ├── TURQUOISE / COVE YOUTUBE CAM -> <iframe width="816" height="459" src="https://www.youtube.com/embed/pJqrjIuvGFE" title="Live from Turquoise Place" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+Alabama
+
+Dauphin Island
+https://video.hazcams.com/dauphin-island-al-us-002/main_stream.m3u8
+
+Gulf Shores
+https://video.hazcams.com/gulf-shores-al-us-001/main_stream.m3u8
+BEACH CLUB YOUTUBE CAM -> <iframe width="816" height="459" src="https://www.youtube.com/embed/l2em7gqBj00" title="LIVE from The Beach Club" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+ENCLAVE YOUTUBE CAM -> <iframe width="816" height="459" src="https://www.youtube.com/embed/g4fuUj6X7GY" title="The Enclave Orange Beach, AL" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+Orange Beach
+https://video.hazcams.com/orange-beach-al-us-001/main_stream.m3u8
+https://orangebeach.b-cdn.net/Alabama/orange-beach-holiday-inn.stream/chunklist.m3u8
+JETTY YOUTUBE CAM -> <iframe width="816" height="459" src="https://www.youtube.com/embed/5Ijk8QsR-nw" title="🔴 LIVE CAM: Orange Beach, Alabama and the Gulf" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+TURQUOISE / COVE YOUTUBE CAM -> <iframe width="816" height="459" src="https://www.youtube.com/embed/pJqrjIuvGFE" title="Live from Turquoise Place" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 
 
