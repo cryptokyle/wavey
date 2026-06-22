@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Beach Cam Dashboard</title>
+<title>Live Beach Cams</title>
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
@@ -26,54 +26,28 @@ video, iframe {
   width:100%;
   height:600px;
   border-radius:10px;
-}
-
-/* STATUS BADGES */
-.status {
-  position:absolute;
-  top:10px;
-  left:10px;
-  padding:5px 10px;
-  border-radius:6px;
-  font-size:12px;
-}
-
-.live { background:green; }
-.loading { background:orange; }
-.offline { background:red; }
-
-.latency {
-  position:absolute;
-  top:10px;
-  right:10px;
-  background:black;
-  padding:5px 10px;
-  border-radius:6px;
-  font-size:12px;
-}
-
-/* SCAN BUTTON */
-#controls {
-  text-align:center;
-  margin-bottom:10px;
-}
-
-button {
-  padding:8px 15px;
-  margin:5px;
   border:none;
-  border-radius:6px;
   cursor:pointer;
 }
 
-/* MODAL */
+/* OFFLINE */
+.offline {
+  position:absolute;
+  top:10px;
+  left:10px;
+  background:red;
+  padding:6px 10px;
+  border-radius:6px;
+  display:none;
+}
+
 #modal {
   position:fixed;
   inset:0;
   background:black;
   display:none;
-  align-items:center;
   justify-content:center;
+  align-items:center;
 }
 
 #modal video, #modal iframe {
@@ -87,34 +61,19 @@ button {
 
 <h1>🌊 Beach Cam Dashboard</h1>
 
-<div id="controls">
-  <button onclick="startScan()">▶ Start Scan</button>
-  <button onclick="stopScan()">⏹ Stop</button>
-</div>
-
 <div id="modal" onclick="closeModal()"></div>
 
-<!-- STATE -->
+<!-- FLORIDA -->
 <details class="state">
 <summary>Florida</summary>
 
 <details class="city">
-<summary>Inlet Beach</summary>
-
-<details class="break" data-type="hls" data-src="https://video.hazcams.com/inlet-beach-fl-us-001/main_stream.m3tus loading">LOADING</div>
-  <div class="latency"></div>
-  <video muted controls></video>
-</div>
-</details>
-
-</details>
-
-<details class="city">
 <summary>Okaloosa Island</summary>
 
-<details class="break" data-type="yt" data-src="Qnvxideo-wrap">
-  <div class="status loading">LOADING</div>
-  <div class="latency"></div>
+<!-- ✅ YOUTUBE BREAK -->
+<details class="break youtube" data-yt="QnvxSpZ9HPI">
+<summary>Wyndham</summary>
+<div class="video-wrap">
   <div class="player"></div>
 </div>
 </details>
@@ -126,111 +85,108 @@ button {
 <script>
 const PROXY = "https://YOUR-PROXY.onrender.com/hls?url=";
 
+const streams = {
+  vid1: "https://video.hazcams.com/orange-beach-al-us-001/main_stream.m3u8"
+};
+
 let activeBreak = null;
-let scanInterval = null;
 
-/* ================= STREAM HANDLER ================= */
+/* ================= YOUTUBE LOADER ================= */
 
-function setStatus(wrapper, state) {
-  const s = wrapper.querySelector(".status");
-  s.className = "status " + state;
-  s.textContent = state.toUpperCase();
-}
-
-function setLatency(wrapper, time) {
-  const l = wrapper.querySelector(".latency");
-  l.textContent = time + " ms";
-}
-
-function playHLS(video, url, wrapper) {
-  let start = performance.now();
-  setStatus(wrapper, "loading");
-
-  function init(useProxy=false) {
-    const final = useProxy ? PROXY + encodeURIComponent(url) : url;
-
-    const hls = new Hls();
-    hls.loadSource(final);
-    hls.attachMedia(video);
-
-    hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      const latency = Math.round(performance.now() - start);
-      setStatus(wrapper, "live");
-      setLatency(wrapper, latency);
-    });
-
-    hls.on(Hls.Events.ERROR, () => {
-      if (!useProxy) {
-        init(true);
-      } else {
-        setStatus(wrapper, "offline");
-      }
-    });
-  }
-
-  init();
-}
-
-function playYT(container, id, wrapper) {
-  setStatus(wrapper, "loading");
-
-  const start = performance.now();
+function loadYouTube(container, videoId) {
+  if (container.dataset.loaded) return;
 
   const iframe = document.createElement("iframe");
-  iframe.src =
-    "https://www.youtube.com/embed/" + id +
-    "?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0";
 
-  iframe.onload = () => {
-    const latency = Math.round(performance.now() - start);
-    setStatus(wrapper, "live");
-    setLatency(wrapper, latency);
-  };
+  iframe.src =
+    "https://www.youtube.com/embed/" + videoId +
+    "?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&playsinline=1";
+
+  iframe.allow = "autoplay; encrypted-media";
+  iframe.allowFullscreen = true;
 
   container.appendChild(iframe);
+  container.dataset.loaded = true;
 }
 
-function clearStream(detail) {
-  const vid = detail.querySelector("video");
-  const player = detail.querySelector(".player");
+function unloadYouTube(container) {
+  container.innerHTML = "";
+  container.dataset.loaded = "";
+}
 
-  if (vid) {
-    vid.pause();
-    vid.removeAttribute("src");
-    vid.load();
+/* ================= HLS STREAM ================= */
+
+function playStream(video, url, wrapper, useProxy=false) {
+  const final = useProxy ? PROXY + encodeURIComponent(url) : url;
+  const offline = wrapper.querySelector(".offline");
+
+  const hls = new Hls();
+  hls.loadSource(final);
+  hls.attachMedia(video);
+
+  hls.on(Hls.Events.ERROR, () => {
+    if (!useProxy) {
+      playStream(video, url, wrapper, true);
+    } else {
+      offline.style.display = "block";
+    }
+  });
+
+  video.dataset.loaded = true;
+}
+
+function load(video, url) {
+  const wrapper = video.closest(".video-wrap");
+  if (!video.dataset.loaded) {
+    playStream(video, url, wrapper);
   }
-  if (player) player.innerHTML = "";
+}
+
+function unload(video) {
+  video.pause();
+  video.removeAttribute("src");
+  video.load();
+  video.dataset.loaded = "";
 }
 
 /* ================= BREAK LOGIC ================= */
 
 document.querySelectorAll(".break").forEach(detail => {
+
   detail.addEventListener("toggle", () => {
 
-    const wrapper = detail.querySelector(".video-wrap");
+    const video = detail.querySelector("video");
+    const ytContainer = detail.querySelector(".player");
+    const ytId = detail.dataset.yt;
 
     if (detail.open) {
+
       if (activeBreak && activeBreak !== detail) {
         activeBreak.open = false;
       }
       activeBreak = detail;
 
-      const type = detail.dataset.type;
-      const src = detail.dataset.src;
+      // ✅ HLS
+      if (video) {
+        load(video, streams[video.id]);
+      }
 
-      if (type === "hls") {
-        playHLS(detail.querySelector("video"), src, wrapper);
-      } else {
-        playYT(detail.querySelector(".player"), src, wrapper);
+      // ✅ YOUTUBE AUTOPLAY
+      if (ytContainer && ytId) {
+        loadYouTube(ytContainer, ytId);
       }
 
     } else {
-      clearStream(detail);
+
+      if (video) unload(video);
+
+      if (ytContainer) unloadYouTube(ytContainer);
     }
   });
+
 });
 
-/* ================= CITY COLLAPSE ================= */
+/* ================= CITY AUTOCOLLAPSE ================= */
 
 document.querySelectorAll(".state").forEach(state => {
   const cities = state.querySelectorAll(".city");
@@ -245,36 +201,6 @@ document.querySelectorAll(".state").forEach(state => {
     });
   });
 });
-
-/* ================= SCAN MODE ================= */
-
-const breaks = Array.from(document.querySelectorAll(".break"));
-let scanIndex = 0;
-
-function openBreak(i) {
-  const b = breaks[i];
-
-  // open parents
-  let parent = b.parentElement;
-  while (parent) {
-    if (parent.tagName === "DETAILS") parent.open = true;
-    parent = parent.parentElement;
-  }
-
-  b.open = true;
-}
-
-function startScan() {
-  stopScan();
-  scanInterval = setInterval(() => {
-    openBreak(scanIndex);
-    scanIndex = (scanIndex + 1) % breaks.length;
-  }, 8000); // change speed here
-}
-
-function stopScan() {
-  clearInterval(scanInterval);
-}
 
 /* ================= MODAL ================= */
 
