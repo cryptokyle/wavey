@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Live Beach Cams</title>
+<title>Beach Cam Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
@@ -26,21 +26,40 @@ video, iframe {
   width:100%;
   height:600px;
   border-radius:10px;
-  border:none;
-  cursor:pointer;
 }
 
-/* OFFLINE */
-.offline {
+/* STATUS */
+.status {
   position:absolute;
   top:10px;
   left:10px;
-  background:red;
-  padding:6px 10px;
+  padding:5px 10px;
   border-radius:6px;
-  display:none;
+  font-size:12px;
+}
+.live { background:green; }
+.loading { background:orange; }
+.offline { background:red; }
+
+.latency {
+  position:absolute;
+  top:10px;
+  right:10px;
+  background:black;
+  padding:5px 10px;
+  border-radius:6px;
 }
 
+/* CONTROLS */
+#controls {
+  text-align:center;
+}
+button {
+  padding:8px 12px;
+  margin:5px;
+}
+
+/* MODAL */
 #modal {
   position:fixed;
   inset:0;
@@ -61,20 +80,148 @@ video, iframe {
 
 <h1>🌊 Beach Cam Dashboard</h1>
 
+<div id="controls">
+  <button onclick="startScan()">▶ Scan</button>
+  <button onclick="stopScan()">⏹ Stop</button>
+</div>
+
 <div id="modal" onclick="closeModal()"></div>
 
-<!-- FLORIDA -->
+<!-- ================= ALABAMA ================= -->
+
+<details class="state">
+<summary>Alabama</summary>
+
+<!-- Orange Beach -->
+<details class="city">
+<summary>Orange Beach</summary>
+
+<details class="break" data-type="hls" data-src="https://video.hazcams.com/orange-beach-al-us-001/main_stream.m3u8">LOADING</div>
+<div class="latency"></div>
+<video muted controls></video>
+</div>
+</details>
+
+<details class="break" data-type="hls" data-src="https://orangebeach.b-cdn.net/Alabama/orange-beach-holiday-inn.stream/chunklist.m3u8-wrap">
+<div class="status loading">LOADING</div>
+<div class="latency"></div>
+<video muted controls></video>
+</div>
+</details>
+
+<details class="break" data-type="yt" data-src="5Ijk8QsR-nwwrap">
+<div class="status loading">LOADING</div>
+<div class="latency"></div>
+<div class="player"></div>
+</div>
+</details>
+
+<details class="break" data-type="yt" dataary>
+<div class="video-wrap">
+<div class="status loading">LOADING</div>
+<div class="latency"></div>
+<div class="player"></div>
+</div>
+</details>
+
+</details>
+
+<!-- Gulf Shores -->
+<details class="city">
+<summary>Gulf Shores</summary>
+
+<details class="break" data-type="hls" data-src="https://video.hazcams.comMain Beach</summary>
+<div class="video-wrap">
+<div class="status loading">LOADING</div>
+<div class="latency"></div>
+<video muted controls></video>
+</div>
+</details>
+
+<details class="break" data-type="yt" data-src="l2em7gqBjeo-wrap">
+<div class="status loading">LOADING</div>
+<div class="latency"></div>
+<div class="player"></div>
+</div>
+</details>
+
+<details class="break" data-type="yt" data-srcass="video-wrap">
+<div class="status loading">LOADING</div>
+<div class="latency"></div>
+<div class="player"></div>
+</div>
+</details>
+
+</details>
+
+<!-- Dauphin Island -->
+<details class="city">
+<summary>Dauphin Island</summary>
+
+<details class="break" data-type="hls" data-src="https://video.haz8
+<summary>Main Cam</summary>
+<div class="video-wrap">
+<div class="status loading">LOADING</div>
+<div class="latency"></div>
+<video muted controls></video>
+</div>
+</details>
+
+</details>
+
+</details>
+
+<!-- ================= FLORIDA ================= -->
+
 <details class="state">
 <summary>Florida</summary>
 
 <details class="city">
+<summary>Inlet Beach</summary>
+
+<details class="break" data-type="hls" data-src="https://video.hazcams.com/inlet-beach-fl-us-001v class="video-wrap">
+<div class="status loading">LOADING</div>
+<div class="latency"></div>
+<video muted controls></video>
+</div>
+</details>
+
+</details>
+
+<details class="city">
 <summary>Okaloosa Island</summary>
 
-<!-- ✅ YOUTUBE BREAK -->
-<details class="break youtube" data-yt="QnvxSpZ9HPI">
-<summary>Wyndham</summary>
+<details class="mary>Wyndham Garden</summary>
 <div class="video-wrap">
-  <div class="player"></div>
+<div class="status loading">LOADING</div>
+<div class="latency"></div>
+<div class="player"></div>
+</div>
+</details>
+
+</details>
+
+<details class="city">
+<summary>Panama City Beach</summary>
+
+<details class="break" data-type="hls" data-src="https://video.hazm3u8
+<summary>Main Cam</summary>
+<div class="video-wrap">
+<div class="status loading">LOADING</div>
+<div class="latency"></div>
+<video muted controls></video>
+</div>
+</details>
+
+</details>
+
+<details class="city">
+<summary>St. George Island</summary>
+
+<details class="break" data-type="hls" data-src="https://stgeorgelighthouse.cdn.coastalcameranetwork.com/Florida/stgeorgelighthouse.stream/chunks="video-wrap">
+<div class="status loading">LOADING</div>
+<div class="latency"></div>
+<video muted controls></video>
 </div>
 </details>
 
@@ -84,140 +231,112 @@ video, iframe {
 
 <script>
 const PROXY = "https://YOUR-PROXY.onrender.com/hls?url=";
-
-const streams = {
-  vid1: "https://video.hazcams.com/orange-beach-al-us-001/main_stream.m3u8"
-};
-
 let activeBreak = null;
 
-/* ================= YOUTUBE LOADER ================= */
+/* STREAM */
+function setStatus(w,s){const el=w.querySelector(".status");el.className="status "+s;el.textContent=s.toUpperCase();}
+function setLatency(w,t){w.querySelector(".latency").textContent=t+" ms";}
 
-function loadYouTube(container, videoId) {
-  if (container.dataset.loaded) return;
+function playHLS(video,url,w){
+let start=performance.now();
+function load(useProxy=false){
+const hls=new Hls();
+hls.loadSource(useProxy?PROXY+encodeURIComponent(url):url);
+hls.attachMedia(video);
 
-  const iframe = document.createElement("iframe");
-
-  iframe.src =
-    "https://www.youtube.com/embed/" + videoId +
-    "?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&playsinline=1";
-
-  iframe.allow = "autoplay; encrypted-media";
-  iframe.allowFullscreen = true;
-
-  container.appendChild(iframe);
-  container.dataset.loaded = true;
-}
-
-function unloadYouTube(container) {
-  container.innerHTML = "";
-  container.dataset.loaded = "";
-}
-
-/* ================= HLS STREAM ================= */
-
-function playStream(video, url, wrapper, useProxy=false) {
-  const final = useProxy ? PROXY + encodeURIComponent(url) : url;
-  const offline = wrapper.querySelector(".offline");
-
-  const hls = new Hls();
-  hls.loadSource(final);
-  hls.attachMedia(video);
-
-  hls.on(Hls.Events.ERROR, () => {
-    if (!useProxy) {
-      playStream(video, url, wrapper, true);
-    } else {
-      offline.style.display = "block";
-    }
-  });
-
-  video.dataset.loaded = true;
-}
-
-function load(video, url) {
-  const wrapper = video.closest(".video-wrap");
-  if (!video.dataset.loaded) {
-    playStream(video, url, wrapper);
-  }
-}
-
-function unload(video) {
-  video.pause();
-  video.removeAttribute("src");
-  video.load();
-  video.dataset.loaded = "";
-}
-
-/* ================= BREAK LOGIC ================= */
-
-document.querySelectorAll(".break").forEach(detail => {
-
-  detail.addEventListener("toggle", () => {
-
-    const video = detail.querySelector("video");
-    const ytContainer = detail.querySelector(".player");
-    const ytId = detail.dataset.yt;
-
-    if (detail.open) {
-
-      if (activeBreak && activeBreak !== detail) {
-        activeBreak.open = false;
-      }
-      activeBreak = detail;
-
-      // ✅ HLS
-      if (video) {
-        load(video, streams[video.id]);
-      }
-
-      // ✅ YOUTUBE AUTOPLAY
-      if (ytContainer && ytId) {
-        loadYouTube(ytContainer, ytId);
-      }
-
-    } else {
-
-      if (video) unload(video);
-
-      if (ytContainer) unloadYouTube(ytContainer);
-    }
-  });
-
+hls.on(Hls.Events.MANIFEST_PARSED,()=>{
+setStatus(w,"live");
+setLatency(w,Math.round(performance.now()-start));
 });
 
-/* ================= CITY AUTOCOLLAPSE ================= */
-
-document.querySelectorAll(".state").forEach(state => {
-  const cities = state.querySelectorAll(".city");
-
-  cities.forEach(city => {
-    city.addEventListener("toggle", () => {
-      if (city.open) {
-        cities.forEach(c => {
-          if (c !== city) c.open = false;
-        });
-      }
-    });
-  });
+hls.on(Hls.Events.ERROR,()=>{
+if(!useProxy) load(true); else setStatus(w,"offline");
 });
-
-/* ================= MODAL ================= */
-
-const modal = document.getElementById("modal");
-
-document.addEventListener("click", e => {
-  if (e.target.tagName === "VIDEO" || e.target.tagName === "IFRAME") {
-    modal.innerHTML = "";
-    modal.style.display = "flex";
-    modal.appendChild(e.target.cloneNode(true));
-  }
-});
-
-function closeModal() {
-  modal.style.display = "none";
-  modal.innerHTML = "";
 }
+setStatus(w,"loading");
+load();
+}
+
+function playYT(container,id,w){
+let start=performance.now();
+setStatus(w,"loading");
+
+const iframe=document.createElement("iframe");
+iframe.src=`https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0`;
+
+iframe.onload=()=>{
+setStatus(w,"live");
+setLatency(w,Math.round(performance.now()-start));
+};
+container.appendChild(iframe);
+}
+
+function clear(detail){
+const v=detail.querySelector("video");
+const p=detail.querySelector(".player");
+if(v){v.pause();v.src="";v.load();}
+if(p) p.innerHTML="";
+}
+
+/* BREAK */
+document.querySelectorAll(".break").forEach(d=>{
+d.addEventListener("toggle",()=>{
+const wrap=d.querySelector(".video-wrap");
+
+if(d.open){
+if(activeBreak&&activeBreak!==d) activeBreak.open=false;
+activeBreak=d;
+
+if(d.dataset.type==="hls") playHLS(d.querySelector("video"),d.dataset.src,wrap);
+else playYT(d.querySelector(".player"),d.dataset.src,wrap);
+
+}else clear(d);
+});
+});
+
+/* CITY AUTO COLLAPSE */
+document.querySelectorAll(".state").forEach(state=>{
+const cities=state.querySelectorAll(".city");
+cities.forEach(c=>{
+c.addEventListener("toggle",()=>{
+if(c.open){
+cities.forEach(x=>{ if(x!==c) x.open=false; });
+}
+});
+});
+});
+
+/* SCAN */
+const breaks=[...document.querySelectorAll(".break")];
+let i=0,scan;
+
+function openBreak(idx){
+const b=breaks[idx];
+let p=b.parentElement;
+while(p){ if(p.tagName==="DETAILS") p.open=true; p=p.parentElement;}
+b.open=true;
+}
+
+function startScan(){
+stopScan();
+scan=setInterval(()=>{
+openBreak(i);
+i=(i+1)%breaks.length;
+},8000);
+}
+
+function stopScan(){ clearInterval(scan); }
+
+/* MODAL */
+const modal=document.getElementById("modal");
+document.addEventListener("click",e=>{
+if(e.target.tagName==="VIDEO"||e.target.tagName==="IFRAME"){
+modal.innerHTML="";
+modal.style.display="flex";
+modal.appendChild(e.target.cloneNode(true));
+}
+});
+function closeModal(){modal.style.display="none";modal.innerHTML="";}
 </script>
 
 </body>
