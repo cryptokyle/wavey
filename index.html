@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Beach Cam Dashboard</title>
 
-<!-- ✅ FIXED SCRIPT -->
+<!-- ✅ FIXED HLS SCRIPT -->
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 <style>
@@ -74,28 +74,30 @@ video, iframe {
 
 <div id="modal" onclick="closeModal()"></div>
 
-<!-- ================= ALABAMA ================= -->
-
+<!-- ========== ALABAMA ========== -->
 <details class="state">
 <summary>Alabama</summary>
 
 <details class="city">
 <summary>Orange Beach</summary>
 
-<details class="break" data-type="hls" data-src="https://video.hazcams.com/orange-beach-al-us-001/main_streamstatus loading">LOADING</div>
-<div class="latency"></div>
-<video muted controls></video>
-</div>
-</details>
-
-<details class="break" data-type="hls" data-src="https://orangebeach.b-cdn.net/Alabama/orange-beach-holiday-inn.stream/chunklist.m3u8-wrap">
+<details class="break" data-type="hls" data-src="https://video.hummary>
+<div class="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <video muted controls></video>
 </div>
 </details>
 
-<details class="break"etty Cam</summary>
+<details class="break" data-type="hls" data-src="https://orangebeach.b-cdn.net/Alabama/orange-beach-holiday-ummary>
+<div class="video-wrap">
+<div class="status loading">LOADING</div>
+<div class="latency"></div>
+<video muted controls></video>
+</div>
+</details>
+
+<details class="break" dataCam</summary>
 <div class="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
@@ -103,8 +105,7 @@ video, iframe {
 </div>
 </details>
 
-<details class="break" data-type="yt" dataary>
-<div class="video-wrap">
+<details class="break" data-type="yt" data-src="pJqrjIuvGFEvideo-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <div class="player"></div>
@@ -116,22 +117,22 @@ video, iframe {
 <details class="city">
 <summary>Gulf Shores</summary>
 
-<details class="break" data-type="hls" data-src="https://video.hazcams.com/gulf-shch</summary>
-<div class="video-wrap">
+<details class="break" data-type="hls" data-src="https://video.hazcams.com/gulf-shores-al-us-001div class="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <video muted controls></video>
 </div>
 </details>
 
-<details class="break" data-type="yt" data-src="l2em7gqBj00-wrap">
+<details class="break" data-type="yt"ary>
+<div class="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <div class="player"></div>
 </div>
 </details>
 
-<details class="break" data-type="yt" datav class="video-wrap">
+<details class="break" data-type="yt" data-src="g4fuUj6o-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <div class="player"></div>
@@ -143,7 +144,8 @@ video, iframe {
 <details class="city">
 <summary>Dauphin Island</summary>
 
-<details class="break" data-type="hls" data-src="https://video.hazcams.com/dauphin-island-al-us-002v class="video-wrap">
+<details class="break" data-type="hls" data-src="https://video.hazcams.com/dauphin-island-al-us
+<div class="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <video muted controls></video>
@@ -154,16 +156,14 @@ video, iframe {
 
 </details>
 
-<!-- ================= FLORIDA ================= -->
-
+<!-- ========== FLORIDA ========== -->
 <details class="state">
 <summary>Florida</summary>
 
 <details class="city">
 <summary>Inlet Beach</summary>
 
-<details class="break" data-type="hls" data-src="https://video.hazcams.com/inlet-be/summary>
-<div class="video-wrap">
+<details class="break" data-type="hls" data-src="https://video.hazcams.com/inlet-beach-fl-us-001/main_stream.m3wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <video muted controls></video>
@@ -175,7 +175,7 @@ video, iframe {
 <details class="city">
 <summary>Okaloosa Island</summary>
 
-<details class="break" data-type="yt" data-src="QnvxSpZ9HPIideo-wrap">
+<details class="break" data-type="yt" data-src="QnvxSpZs="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <div class="player"></div>
@@ -187,7 +187,8 @@ video, iframe {
 <details class="city">
 <summary>Panama City Beach</summary>
 
-<details class="break" data-type="hls" data-src="https://video.hazcams.com/panama-city-beach-fl-us-001/mainss="video-wrap">
+<details class="break" data-type="hls" data-src="https://video.hazcams.com/panama-city-beach-fl-us
+<div class="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <video muted controls></video>
@@ -214,23 +215,24 @@ video, iframe {
 const PROXY = "https://YOUR-PROXY.onrender.com/hls?url=";
 let activeBreak = null;
 
-/* STREAM */
+/* STATUS */
 function setStatus(w,s){
   const el=w.querySelector(".status");
   el.className="status "+s;
   el.textContent=s.toUpperCase();
 }
-
 function setLatency(w,t){
   w.querySelector(".latency").textContent=t+" ms";
 }
 
+/* HLS */
 function playHLS(video,url,w){
   let start=performance.now();
+  setStatus(w,"loading");
 
   function load(useProxy=false){
     const hls=new Hls();
-    hls.loadSource(useProxy?PROXY+encodeURIComponent(url):url);
+    hls.loadSource(useProxy ? PROXY+encodeURIComponent(url):url);
     hls.attachMedia(video);
 
     hls.on(Hls.Events.MANIFEST_PARSED,()=>{
@@ -244,17 +246,17 @@ function playHLS(video,url,w){
     });
   }
 
-  setStatus(w,"loading");
   load();
 }
 
+/* YOUTUBE */
 function playYT(container,id,w){
   let start=performance.now();
-
   setStatus(w,"loading");
 
   const iframe=document.createElement("iframe");
-  iframe.src=`https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0`;
+  iframe.src =
+    `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0`;
 
   iframe.onload=()=>{
     setStatus(w,"live");
@@ -264,6 +266,7 @@ function playYT(container,id,w){
   container.appendChild(iframe);
 }
 
+/* CLEAR */
 function clear(detail){
   const v=detail.querySelector("video");
   const p=detail.querySelector(".player");
@@ -273,7 +276,6 @@ function clear(detail){
     v.src="";
     v.load();
   }
-
   if(p) p.innerHTML="";
 }
 
