@@ -2,9 +2,9 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Live Beach Cams</title>
+<title>Gulf Coast Beach Cams</title>
 
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+https://cdn.jsdelivr.net/npm/hls.js@latest>
 
 <style>
 body {
@@ -64,7 +64,7 @@ video, iframe {
 
 <body>
 
-<h1>🌊 Live Beach Cameras</h1>
+<h1>🌊 Live</h1>
 
 <!-- MODAL -->
 <div id="modal" onclick="closeModal()"></div>
@@ -76,22 +76,22 @@ video, iframe {
 <details>
 <summary>Orange Beach</summary>
 
-<details>
+<details class="break">
 <summary>Main Beach</summary>
 <video id="vid1" controls muted></video>
 </details>
 
-<details>
+<details class="break">
 <summary>Holiday Inn</summary>
 <video id="vid2" controls muted></video>
 </details>
 
-<details>
+<details class="break">
 <summary>Jetty Cam</summary>
 <iframe src="https://www.youtube.com/embed/5Ijk8QsR-nw"></iframe>
 </details>
 
-<details>
+<details class="break">
 <summary>Turquoise Place</summary>
 <iframe src="https://www.youtube.com/embed/pJqrjIuvGFE"></iframe>
 </details>
@@ -101,17 +101,17 @@ video, iframe {
 <details>
 <summary>Gulf Shores</summary>
 
-<details>
+<details class="break">
 <summary>Main Beach</summary>
 <video id="vid3" controls muted></video>
 </details>
 
-<details>
+<details class="break">
 <summary>Beach Club</summary>
 <iframe src="https://www.youtube.com/embed/l2em7gqBj00"></iframe>
 </details>
 
-<details>
+<details class="break">
 <summary>Enclave</summary>
 <iframe src="https://www.youtube.com/embed/g4fuUj6X7GY"></iframe>
 </details>
@@ -121,7 +121,7 @@ video, iframe {
 <details>
 <summary>Dauphin Island</summary>
 
-<details>
+<details class="break">
 <summary>Main Cam</summary>
 <video id="vid4" controls muted></video>
 </details>
@@ -137,7 +137,7 @@ video, iframe {
 <details>
 <summary>Inlet Beach</summary>
 
-<details>
+<details class="break">
 <summary>Main Cam</summary>
 <video id="vid5" controls muted></video>
 </details>
@@ -147,7 +147,7 @@ video, iframe {
 <details>
 <summary>Okaloosa Island</summary>
 
-<details>
+<details class="break">
 <summary>Wyndham Garden</summary>
 <iframe src="https://www.youtube.com/embed/QnvxSpZ9HPI"></iframe>
 </details>
@@ -157,7 +157,7 @@ video, iframe {
 <details>
 <summary>Panama City Beach</summary>
 
-<details>
+<details class="break">
 <summary>Main Cam</summary>
 <video id="vid6" controls muted></video>
 </details>
@@ -167,7 +167,7 @@ video, iframe {
 <details>
 <summary>St. George Island</summary>
 
-<details>
+<details class="break">
 <summary>Lighthouse</summary>
 <video id="vid7" controls muted></video>
 </details>
@@ -187,7 +187,7 @@ const streams = {
   vid7: "https://stgeorgelighthouse.cdn.coastalcameranetwork.com/Florida/stgeorgelighthouse.stream/chunklist.m3u8"
 };
 
-let activeDetail = null;
+let activeBreak = null;
 
 function loadStream(video, url) {
   if (video.dataset.loaded) return;
@@ -223,19 +223,19 @@ function unloadStream(video) {
   video.dataset.loaded = "";
 }
 
-// ONLY ONE OPEN STREAM AT A TIME + LOAD/UNLOAD
-document.querySelectorAll("details").forEach(detail => {
-  detail.addEventListener("toggle", () => {
+// ONLY apply to break-level panels
+document.querySelectorAll("details.break").forEach(detail => {
 
+  detail.addEventListener("toggle", () => {
     const video = detail.querySelector("video");
 
     if (detail.open) {
 
-      // close previous open break
-      if (activeDetail && activeDetail !== detail) {
-        activeDetail.open = false;
+      // Close previously open break
+      if (activeBreak && activeBreak !== detail) {
+        activeBreak.open = false;
       }
-      activeDetail = detail;
+      activeBreak = detail;
 
       if (video) {
         const url = streams[video.id];
