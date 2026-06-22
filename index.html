@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Beach Cam Dashboard</title>
 
+<!-- ✅ FIXED SCRIPT -->
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 <style>
@@ -50,15 +51,6 @@ video, iframe {
   border-radius:6px;
 }
 
-/* CONTROLS */
-#controls {
-  text-align:center;
-}
-button {
-  padding:8px 12px;
-  margin:5px;
-}
-
 /* MODAL */
 #modal {
   position:fixed;
@@ -80,11 +72,6 @@ button {
 
 <h1>🌊 Beach Cam Dashboard</h1>
 
-<div id="controls">
-  <button onclick="startScan()">▶ Scan</button>
-  <button onclick="stopScan()">⏹ Stop</button>
-</div>
-
 <div id="modal" onclick="closeModal()"></div>
 
 <!-- ================= ALABAMA ================= -->
@@ -92,11 +79,10 @@ button {
 <details class="state">
 <summary>Alabama</summary>
 
-<!-- Orange Beach -->
 <details class="city">
 <summary>Orange Beach</summary>
 
-<details class="break" data-type="hls" data-src="https://video.hazcams.com/orange-beach-al-us-001/main_stream.m3u8">LOADING</div>
+<details class="break" data-type="hls" data-src="https://video.hazcams.com/orange-beach-al-us-001/main_streamstatus loading">LOADING</div>
 <div class="latency"></div>
 <video muted controls></video>
 </div>
@@ -109,7 +95,8 @@ button {
 </div>
 </details>
 
-<details class="break" data-type="yt" data-src="5Ijk8QsR-nwwrap">
+<details class="break"etty Cam</summary>
+<div class="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <div class="player"></div>
@@ -126,11 +113,10 @@ button {
 
 </details>
 
-<!-- Gulf Shores -->
 <details class="city">
 <summary>Gulf Shores</summary>
 
-<details class="break" data-type="hls" data-src="https://video.hazcams.comMain Beach</summary>
+<details class="break" data-type="hls" data-src="https://video.hazcams.com/gulf-shch</summary>
 <div class="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
@@ -138,14 +124,14 @@ button {
 </div>
 </details>
 
-<details class="break" data-type="yt" data-src="l2em7gqBjeo-wrap">
+<details class="break" data-type="yt" data-src="l2em7gqBj00-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <div class="player"></div>
 </div>
 </details>
 
-<details class="break" data-type="yt" data-srcass="video-wrap">
+<details class="break" data-type="yt" datav class="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <div class="player"></div>
@@ -154,13 +140,10 @@ button {
 
 </details>
 
-<!-- Dauphin Island -->
 <details class="city">
 <summary>Dauphin Island</summary>
 
-<details class="break" data-type="hls" data-src="https://video.haz8
-<summary>Main Cam</summary>
-<div class="video-wrap">
+<details class="break" data-type="hls" data-src="https://video.hazcams.com/dauphin-island-al-us-002v class="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <video muted controls></video>
@@ -179,7 +162,8 @@ button {
 <details class="city">
 <summary>Inlet Beach</summary>
 
-<details class="break" data-type="hls" data-src="https://video.hazcams.com/inlet-beach-fl-us-001v class="video-wrap">
+<details class="break" data-type="hls" data-src="https://video.hazcams.com/inlet-be/summary>
+<div class="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <video muted controls></video>
@@ -191,8 +175,7 @@ button {
 <details class="city">
 <summary>Okaloosa Island</summary>
 
-<details class="mary>Wyndham Garden</summary>
-<div class="video-wrap">
+<details class="break" data-type="yt" data-src="QnvxSpZ9HPIideo-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <div class="player"></div>
@@ -204,9 +187,7 @@ button {
 <details class="city">
 <summary>Panama City Beach</summary>
 
-<details class="break" data-type="hls" data-src="https://video.hazm3u8
-<summary>Main Cam</summary>
-<div class="video-wrap">
+<details class="break" data-type="hls" data-src="https://video.hazcams.com/panama-city-beach-fl-us-001/mainss="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <video muted controls></video>
@@ -218,7 +199,7 @@ button {
 <details class="city">
 <summary>St. George Island</summary>
 
-<details class="break" data-type="hls" data-src="https://stgeorgelighthouse.cdn.coastalcameranetwork.com/Florida/stgeorgelighthouse.stream/chunks="video-wrap">
+<details class="break" data-type="hls" data-src="https://stgeorgelighthouse.cdn.coastalcameranetwork.com/Florida/stgeorgelighthouse.stream/chunklist.m3u-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <video muted controls></video>
@@ -234,109 +215,121 @@ const PROXY = "https://YOUR-PROXY.onrender.com/hls?url=";
 let activeBreak = null;
 
 /* STREAM */
-function setStatus(w,s){const el=w.querySelector(".status");el.className="status "+s;el.textContent=s.toUpperCase();}
-function setLatency(w,t){w.querySelector(".latency").textContent=t+" ms";}
+function setStatus(w,s){
+  const el=w.querySelector(".status");
+  el.className="status "+s;
+  el.textContent=s.toUpperCase();
+}
+
+function setLatency(w,t){
+  w.querySelector(".latency").textContent=t+" ms";
+}
 
 function playHLS(video,url,w){
-let start=performance.now();
-function load(useProxy=false){
-const hls=new Hls();
-hls.loadSource(useProxy?PROXY+encodeURIComponent(url):url);
-hls.attachMedia(video);
+  let start=performance.now();
 
-hls.on(Hls.Events.MANIFEST_PARSED,()=>{
-setStatus(w,"live");
-setLatency(w,Math.round(performance.now()-start));
-});
+  function load(useProxy=false){
+    const hls=new Hls();
+    hls.loadSource(useProxy?PROXY+encodeURIComponent(url):url);
+    hls.attachMedia(video);
 
-hls.on(Hls.Events.ERROR,()=>{
-if(!useProxy) load(true); else setStatus(w,"offline");
-});
-}
-setStatus(w,"loading");
-load();
+    hls.on(Hls.Events.MANIFEST_PARSED,()=>{
+      setStatus(w,"live");
+      setLatency(w,Math.round(performance.now()-start));
+    });
+
+    hls.on(Hls.Events.ERROR,()=>{
+      if(!useProxy) load(true);
+      else setStatus(w,"offline");
+    });
+  }
+
+  setStatus(w,"loading");
+  load();
 }
 
 function playYT(container,id,w){
-let start=performance.now();
-setStatus(w,"loading");
+  let start=performance.now();
 
-const iframe=document.createElement("iframe");
-iframe.src=`https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0`;
+  setStatus(w,"loading");
 
-iframe.onload=()=>{
-setStatus(w,"live");
-setLatency(w,Math.round(performance.now()-start));
-};
-container.appendChild(iframe);
+  const iframe=document.createElement("iframe");
+  iframe.src=`https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0`;
+
+  iframe.onload=()=>{
+    setStatus(w,"live");
+    setLatency(w,Math.round(performance.now()-start));
+  };
+
+  container.appendChild(iframe);
 }
 
 function clear(detail){
-const v=detail.querySelector("video");
-const p=detail.querySelector(".player");
-if(v){v.pause();v.src="";v.load();}
-if(p) p.innerHTML="";
+  const v=detail.querySelector("video");
+  const p=detail.querySelector(".player");
+
+  if(v){
+    v.pause();
+    v.src="";
+    v.load();
+  }
+
+  if(p) p.innerHTML="";
 }
 
-/* BREAK */
+/* BREAK LOGIC */
 document.querySelectorAll(".break").forEach(d=>{
-d.addEventListener("toggle",()=>{
-const wrap=d.querySelector(".video-wrap");
+  d.addEventListener("toggle",()=>{
+    const wrap=d.querySelector(".video-wrap");
 
-if(d.open){
-if(activeBreak&&activeBreak!==d) activeBreak.open=false;
-activeBreak=d;
+    if(d.open){
+      if(activeBreak && activeBreak!==d){
+        activeBreak.open=false;
+      }
+      activeBreak=d;
 
-if(d.dataset.type==="hls") playHLS(d.querySelector("video"),d.dataset.src,wrap);
-else playYT(d.querySelector(".player"),d.dataset.src,wrap);
+      if(d.dataset.type==="hls"){
+        playHLS(d.querySelector("video"),d.dataset.src,wrap);
+      } else {
+        playYT(d.querySelector(".player"),d.dataset.src,wrap);
+      }
 
-}else clear(d);
+    } else {
+      clear(d);
+    }
+  });
 });
-});
 
-/* CITY AUTO COLLAPSE */
+/* CITY AUTOCOLLAPSE */
 document.querySelectorAll(".state").forEach(state=>{
-const cities=state.querySelectorAll(".city");
-cities.forEach(c=>{
-c.addEventListener("toggle",()=>{
-if(c.open){
-cities.forEach(x=>{ if(x!==c) x.open=false; });
-}
+  const cities=state.querySelectorAll(".city");
+
+  cities.forEach(c=>{
+    c.addEventListener("toggle",()=>{
+      if(c.open){
+        cities.forEach(x=>{
+          if(x!==c) x.open=false;
+        });
+      }
+    });
+  });
 });
-});
-});
-
-/* SCAN */
-const breaks=[...document.querySelectorAll(".break")];
-let i=0,scan;
-
-function openBreak(idx){
-const b=breaks[idx];
-let p=b.parentElement;
-while(p){ if(p.tagName==="DETAILS") p.open=true; p=p.parentElement;}
-b.open=true;
-}
-
-function startScan(){
-stopScan();
-scan=setInterval(()=>{
-openBreak(i);
-i=(i+1)%breaks.length;
-},8000);
-}
-
-function stopScan(){ clearInterval(scan); }
 
 /* MODAL */
 const modal=document.getElementById("modal");
+
 document.addEventListener("click",e=>{
-if(e.target.tagName==="VIDEO"||e.target.tagName==="IFRAME"){
-modal.innerHTML="";
-modal.style.display="flex";
-modal.appendChild(e.target.cloneNode(true));
-}
+  if(e.target.tagName==="VIDEO" || e.target.tagName==="IFRAME"){
+    modal.innerHTML="";
+    modal.style.display="flex";
+    modal.appendChild(e.target.cloneNode(true));
+  }
 });
-function closeModal(){modal.style.display="none";modal.innerHTML="";}
+
+function closeModal(){
+  modal.style.display="none";
+  modal.innerHTML="";
+}
 </script>
 
 </body>
