@@ -2,9 +2,10 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Gulf Coast Beach Cams</title>
+<title>Live Beach Cams</title>
 
-https://cdn.jsdelivr.net/npm/hls.js@latest>
+<!-- ✅ FIXED HLS SCRIPT -->
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 <style>
 body {
@@ -33,15 +34,31 @@ summary {
   font-size: 1.2em;
 }
 
+.video-wrap {
+  position: relative;
+}
+
 video, iframe {
   width: 100%;
-  height: 300px;
+  height: 600px; /* ✅ doubled height */
   border-radius: 10px;
   border: none;
   cursor: pointer;
 }
 
-/* FULLSCREEN MODAL */
+/* OFFLINE LABEL */
+.offline {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(255, 0, 0, 0.8);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  display: none;
+}
+
+/* MODAL */
 #modal {
   position: fixed;
   top: 0;
@@ -64,9 +81,8 @@ video, iframe {
 
 <body>
 
-<h1>🌊 Live</h1>
+<h1>🌊 Live Beach Cameras</h1>
 
-<!-- MODAL -->
 <div id="modal" onclick="closeModal()"></div>
 
 <!-- ================= ALABAMA ================= -->
@@ -78,22 +94,32 @@ video, iframe {
 
 <details class="break">
 <summary>Main Beach</summary>
-<video id="vid1" controls muted></video>
+<div class="video-wrap">
+  <div class="offline">Stream Offline</div>
+  <video id="vid1" controls muted></video>
+</div>
 </details>
 
 <details class="break">
 <summary>Holiday Inn</summary>
-<video id="vid2" controls muted></video>
+<div class="video-wrap">
+  <div class="offline">Stream Offline</div>
+  <video id="vid2" controls muted></video>
+</div>
 </details>
 
 <details class="break">
 <summary>Jetty Cam</summary>
-<iframe src="https://www.youtube.com/embed/5Ijk8QsR-nw"></iframe>
+<div class="video-wrap">
+  <iframe src="https://www.youtube.com/embed/5Ijk8QsR-nw"></iframe>
+</div>
 </details>
 
 <details class="break">
 <summary>Turquoise Place</summary>
-<iframe src="https://www.youtube.com/embed/pJqrjIuvGFE"></iframe>
+<div class="video-wrap">
+  <iframe src="https://www.youtube.com/embed/pJqrjIuvGFE"></iframe>
+</div>
 </details>
 
 </details>
@@ -103,17 +129,24 @@ video, iframe {
 
 <details class="break">
 <summary>Main Beach</summary>
-<video id="vid3" controls muted></video>
+<div class="video-wrap">
+  <div class="offline">Stream Offline</div>
+  <video id="vid3" controls muted></video>
+</div>
 </details>
 
 <details class="break">
 <summary>Beach Club</summary>
-<iframe src="https://www.youtube.com/embed/l2em7gqBj00"></iframe>
+<div class="video-wrap">
+  <iframe src="https://www.youtube.com/embed/l2em7gqBj00"></iframe>
+</div>
 </details>
 
 <details class="break">
 <summary>Enclave</summary>
-<iframe src="https://www.youtube.com/embed/g4fuUj6X7GY"></iframe>
+<div class="video-wrap">
+  <iframe src="https://www.youtube.com/embed/g4fuUj6X7GY"></iframe>
+</div>
 </details>
 
 </details>
@@ -123,7 +156,10 @@ video, iframe {
 
 <details class="break">
 <summary>Main Cam</summary>
-<video id="vid4" controls muted></video>
+<div class="video-wrap">
+  <div class="offline">Stream Offline</div>
+  <video id="vid4" controls muted></video>
+</div>
 </details>
 
 </details>
@@ -139,7 +175,10 @@ video, iframe {
 
 <details class="break">
 <summary>Main Cam</summary>
-<video id="vid5" controls muted></video>
+<div class="video-wrap">
+  <div class="offline">Stream Offline</div>
+  <video id="vid5" controls muted></video>
+</div>
 </details>
 
 </details>
@@ -149,7 +188,9 @@ video, iframe {
 
 <details class="break">
 <summary>Wyndham Garden</summary>
-<iframe src="https://www.youtube.com/embed/QnvxSpZ9HPI"></iframe>
+<div class="video-wrap">
+  <iframe src="https://www.youtube.com/embed/QnvxSpZ9HPI"></iframe>
+</div>
 </details>
 
 </details>
@@ -159,7 +200,10 @@ video, iframe {
 
 <details class="break">
 <summary>Main Cam</summary>
-<video id="vid6" controls muted></video>
+<div class="video-wrap">
+  <div class="offline">Stream Offline</div>
+  <video id="vid6" controls muted></video>
+</div>
 </details>
 
 </details>
@@ -169,7 +213,10 @@ video, iframe {
 
 <details class="break">
 <summary>Lighthouse</summary>
-<video id="vid7" controls muted></video>
+<div class="video-wrap">
+  <div class="offline">Stream Offline</div>
+  <video id="vid7" controls muted></video>
+</div>
 </details>
 
 </details>
@@ -192,24 +239,33 @@ let activeBreak = null;
 function loadStream(video, url) {
   if (video.dataset.loaded) return;
 
+  const wrapper = video.closest(".video-wrap");
+  const offlineLabel = wrapper.querySelector(".offline");
+
   let retries = 0;
 
   function init() {
-    if (Hls.isSupported()) {
-      const hls = new Hls();
-      hls.loadSource(url);
-      hls.attachMedia(video);
-
-      hls.on(Hls.Events.ERROR, function () {
-        if (retries < 5) {
-          retries++;
-          setTimeout(init, 3000);
-        }
-      });
-
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = url;
+    if (!window.Hls) {
+      offlineLabel.style.display = "block";
+      return;
     }
+
+    const hls = new Hls();
+    hls.loadSource(url);
+    hls.attachMedia(video);
+
+    hls.on(Hls.Events.ERROR, function () {
+      if (retries < 5) {
+        retries++;
+        setTimeout(init, 3000);
+      } else {
+        offlineLabel.style.display = "block";
+      }
+    });
+
+    video.addEventListener("error", () => {
+      offlineLabel.style.display = "block";
+    });
   }
 
   init();
@@ -217,21 +273,27 @@ function loadStream(video, url) {
 }
 
 function unloadStream(video) {
+  const wrapper = video.closest(".video-wrap");
+  const offlineLabel = wrapper.querySelector(".offline");
+
   video.pause();
   video.removeAttribute("src");
   video.load();
+
+  if (offlineLabel) {
+    offlineLabel.style.display = "none";
+  }
+
   video.dataset.loaded = "";
 }
 
-// ONLY apply to break-level panels
+// ONLY break panels
 document.querySelectorAll("details.break").forEach(detail => {
 
   detail.addEventListener("toggle", () => {
     const video = detail.querySelector("video");
 
     if (detail.open) {
-
-      // Close previously open break
       if (activeBreak && activeBreak !== detail) {
         activeBreak.open = false;
       }
@@ -250,7 +312,7 @@ document.querySelectorAll("details.break").forEach(detail => {
   });
 });
 
-// FULLSCREEN MODAL
+// MODAL
 const modal = document.getElementById("modal");
 
 document.addEventListener("click", e => {
@@ -263,7 +325,7 @@ document.addEventListener("click", e => {
     const clone = e.target.cloneNode(true);
 
     if (clone.tagName === "IFRAME") {
-      clone.src = clone.src + "?autoplay=1";
+      clone.src += "?autoplay=1";
     } else {
       clone.controls = true;
       clone.autoplay = true;
