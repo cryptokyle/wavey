@@ -2,220 +2,120 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Live Beach Cams</title>
+<title>Beach Cam Dashboard</title>
 
-<!-- ✅ FIXED HLS SCRIPT -->
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #0b0f14;
-  color: white;
-}
-
-h1 {
-  text-align: center;
-  padding: 16px;
-}
+body { margin:0; font-family:Arial; background:#0b0f14; color:white; }
+h1 { text-align:center; padding:16px; }
 
 details {
-  margin: 8px;
-  border: 1px solid #333;
-  border-radius: 10px;
-  padding: 8px;
-  background: #121821;
+  margin:8px;
+  border:1px solid #333;
+  border-radius:10px;
+  padding:8px;
+  background:#121821;
 }
 
-summary {
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 1.2em;
-}
+summary { cursor:pointer; font-weight:bold; }
 
-.video-wrap {
-  position: relative;
-}
+.video-wrap { position:relative; }
 
 video, iframe {
-  width: 100%;
-  height: 600px; /* ✅ doubled height */
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
+  width:100%;
+  height:600px;
+  border-radius:10px;
 }
 
-/* OFFLINE LABEL */
-.offline {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: rgba(255, 0, 0, 0.8);
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 0.9em;
-  display: none;
+/* STATUS BADGES */
+.status {
+  position:absolute;
+  top:10px;
+  left:10px;
+  padding:5px 10px;
+  border-radius:6px;
+  font-size:12px;
+}
+
+.live { background:green; }
+.loading { background:orange; }
+.offline { background:red; }
+
+.latency {
+  position:absolute;
+  top:10px;
+  right:10px;
+  background:black;
+  padding:5px 10px;
+  border-radius:6px;
+  font-size:12px;
+}
+
+/* SCAN BUTTON */
+#controls {
+  text-align:center;
+  margin-bottom:10px;
+}
+
+button {
+  padding:8px 15px;
+  margin:5px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
 }
 
 /* MODAL */
 #modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: black;
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
+  position:fixed;
+  inset:0;
+  background:black;
+  display:none;
+  align-items:center;
+  justify-content:center;
 }
 
 #modal video, #modal iframe {
-  width: 95%;
-  height: 95%;
+  width:95%;
+  height:95%;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🌊 Live Beach Cameras</h1>
+<h1>🌊 Beach Cam Dashboard</h1>
+
+<div id="controls">
+  <button onclick="startScan()">▶ Start Scan</button>
+  <button onclick="stopScan()">⏹ Stop</button>
+</div>
 
 <div id="modal" onclick="closeModal()"></div>
 
-<!-- ================= ALABAMA ================= -->
-<details>
-<summary>Alabama</summary>
-
-<details>
-<summary>Orange Beach</summary>
-
-<details class="break">
-<summary>Main Beach</summary>
-<div class="video-wrap">
-  <div class="offline">Stream Offline</div>
-  <video id="vid1" controls muted></video>
-</div>
-</details>
-
-<details class="break">
-<summary>Holiday Inn</summary>
-<div class="video-wrap">
-  <div class="offline">Stream Offline</div>
-  <video id="vid2" controls muted></video>
-</div>
-</details>
-
-<details class="break">
-<summary>Jetty Cam</summary>
-<div class="video-wrap">
-  <iframe src="https://www.youtube.com/embed/5Ijk8QsR-nw"></iframe>
-</div>
-</details>
-
-<details class="break">
-<summary>Turquoise Place</summary>
-<div class="video-wrap">
-  <iframe src="https://www.youtube.com/embed/pJqrjIuvGFE"></iframe>
-</div>
-</details>
-
-</details>
-
-<details>
-<summary>Gulf Shores</summary>
-
-<details class="break">
-<summary>Main Beach</summary>
-<div class="video-wrap">
-  <div class="offline">Stream Offline</div>
-  <video id="vid3" controls muted></video>
-</div>
-</details>
-
-<details class="break">
-<summary>Beach Club</summary>
-<div class="video-wrap">
-  <iframe src="https://www.youtube.com/embed/l2em7gqBj00"></iframe>
-</div>
-</details>
-
-<details class="break">
-<summary>Enclave</summary>
-<div class="video-wrap">
-  <iframe src="https://www.youtube.com/embed/g4fuUj6X7GY"></iframe>
-</div>
-</details>
-
-</details>
-
-<details>
-<summary>Dauphin Island</summary>
-
-<details class="break">
-<summary>Main Cam</summary>
-<div class="video-wrap">
-  <div class="offline">Stream Offline</div>
-  <video id="vid4" controls muted></video>
-</div>
-</details>
-
-</details>
-
-</details>
-
-<!-- ================= FLORIDA ================= -->
-<details>
+<!-- STATE -->
+<details class="state">
 <summary>Florida</summary>
 
-<details>
+<details class="city">
 <summary>Inlet Beach</summary>
 
-<details class="break">
-<summary>Main Cam</summary>
-<div class="video-wrap">
-  <div class="offline">Stream Offline</div>
-  <video id="vid5" controls muted></video>
+<details class="break" data-type="hls" data-src="https://video.hazcams.com/inlet-beach-fl-us-001/main_stream.m3tus loading">LOADING</div>
+  <div class="latency"></div>
+  <video muted controls></video>
 </div>
 </details>
 
 </details>
 
-<details>
+<details class="city">
 <summary>Okaloosa Island</summary>
 
-<details class="break">
-<summary>Wyndham Garden</summary>
-<div class="video-wrap">
-  <iframe src="https://www.youtube.com/embed/QnvxSpZ9HPI"></iframe>
-</div>
-</details>
-
-</details>
-
-<details>
-<summary>Panama City Beach</summary>
-
-<details class="break">
-<summary>Main Cam</summary>
-<div class="video-wrap">
-  <div class="offline">Stream Offline</div>
-  <video id="vid6" controls muted></video>
-</div>
-</details>
-
-</details>
-
-<details>
-<summary>St. George Island</summary>
-
-<details class="break">
-<summary>Lighthouse</summary>
-<div class="video-wrap">
-  <div class="offline">Stream Offline</div>
-  <video id="vid7" controls muted></video>
+<details class="break" data-type="yt" data-src="Qnvxideo-wrap">
+  <div class="status loading">LOADING</div>
+  <div class="latency"></div>
+  <div class="player"></div>
 </div>
 </details>
 
@@ -224,74 +124,90 @@ video, iframe {
 </details>
 
 <script>
-const streams = {
-  vid1: "https://video.hazcams.com/orange-beach-al-us-001/main_stream.m3u8",
-  vid2: "https://orangebeach.b-cdn.net/Alabama/orange-beach-holiday-inn.stream/chunklist.m3u8",
-  vid3: "https://video.hazcams.com/gulf-shores-al-us-001/main_stream.m3u8",
-  vid4: "https://video.hazcams.com/dauphin-island-al-us-002/main_stream.m3u8",
-  vid5: "https://video.hazcams.com/inlet-beach-fl-us-001/main_stream.m3u8",
-  vid6: "https://video.hazcams.com/panama-city-beach-fl-us-001/main_stream.m3u8",
-  vid7: "https://stgeorgelighthouse.cdn.coastalcameranetwork.com/Florida/stgeorgelighthouse.stream/chunklist.m3u8"
-};
+const PROXY = "https://YOUR-PROXY.onrender.com/hls?url=";
 
 let activeBreak = null;
+let scanInterval = null;
 
-function loadStream(video, url) {
-  if (video.dataset.loaded) return;
+/* ================= STREAM HANDLER ================= */
 
-  const wrapper = video.closest(".video-wrap");
-  const offlineLabel = wrapper.querySelector(".offline");
+function setStatus(wrapper, state) {
+  const s = wrapper.querySelector(".status");
+  s.className = "status " + state;
+  s.textContent = state.toUpperCase();
+}
 
-  let retries = 0;
+function setLatency(wrapper, time) {
+  const l = wrapper.querySelector(".latency");
+  l.textContent = time + " ms";
+}
 
-  function init() {
-    if (!window.Hls) {
-      offlineLabel.style.display = "block";
-      return;
-    }
+function playHLS(video, url, wrapper) {
+  let start = performance.now();
+  setStatus(wrapper, "loading");
+
+  function init(useProxy=false) {
+    const final = useProxy ? PROXY + encodeURIComponent(url) : url;
 
     const hls = new Hls();
-    hls.loadSource(url);
+    hls.loadSource(final);
     hls.attachMedia(video);
 
-    hls.on(Hls.Events.ERROR, function () {
-      if (retries < 5) {
-        retries++;
-        setTimeout(init, 3000);
-      } else {
-        offlineLabel.style.display = "block";
-      }
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      const latency = Math.round(performance.now() - start);
+      setStatus(wrapper, "live");
+      setLatency(wrapper, latency);
     });
 
-    video.addEventListener("error", () => {
-      offlineLabel.style.display = "block";
+    hls.on(Hls.Events.ERROR, () => {
+      if (!useProxy) {
+        init(true);
+      } else {
+        setStatus(wrapper, "offline");
+      }
     });
   }
 
   init();
-  video.dataset.loaded = "true";
 }
 
-function unloadStream(video) {
-  const wrapper = video.closest(".video-wrap");
-  const offlineLabel = wrapper.querySelector(".offline");
+function playYT(container, id, wrapper) {
+  setStatus(wrapper, "loading");
 
-  video.pause();
-  video.removeAttribute("src");
-  video.load();
+  const start = performance.now();
 
-  if (offlineLabel) {
-    offlineLabel.style.display = "none";
+  const iframe = document.createElement("iframe");
+  iframe.src =
+    "https://www.youtube.com/embed/" + id +
+    "?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0";
+
+  iframe.onload = () => {
+    const latency = Math.round(performance.now() - start);
+    setStatus(wrapper, "live");
+    setLatency(wrapper, latency);
+  };
+
+  container.appendChild(iframe);
+}
+
+function clearStream(detail) {
+  const vid = detail.querySelector("video");
+  const player = detail.querySelector(".player");
+
+  if (vid) {
+    vid.pause();
+    vid.removeAttribute("src");
+    vid.load();
   }
-
-  video.dataset.loaded = "";
+  if (player) player.innerHTML = "";
 }
 
-// ONLY break panels
-document.querySelectorAll("details.break").forEach(detail => {
+/* ================= BREAK LOGIC ================= */
 
+document.querySelectorAll(".break").forEach(detail => {
   detail.addEventListener("toggle", () => {
-    const video = detail.querySelector("video");
+
+    const wrapper = detail.querySelector(".video-wrap");
 
     if (detail.open) {
       if (activeBreak && activeBreak !== detail) {
@@ -299,39 +215,76 @@ document.querySelectorAll("details.break").forEach(detail => {
       }
       activeBreak = detail;
 
-      if (video) {
-        const url = streams[video.id];
-        if (url) loadStream(video, url);
+      const type = detail.dataset.type;
+      const src = detail.dataset.src;
+
+      if (type === "hls") {
+        playHLS(detail.querySelector("video"), src, wrapper);
+      } else {
+        playYT(detail.querySelector(".player"), src, wrapper);
       }
 
     } else {
-      if (video && video.dataset.loaded) {
-        unloadStream(video);
-      }
+      clearStream(detail);
     }
   });
 });
 
-// MODAL
+/* ================= CITY COLLAPSE ================= */
+
+document.querySelectorAll(".state").forEach(state => {
+  const cities = state.querySelectorAll(".city");
+
+  cities.forEach(city => {
+    city.addEventListener("toggle", () => {
+      if (city.open) {
+        cities.forEach(c => {
+          if (c !== city) c.open = false;
+        });
+      }
+    });
+  });
+});
+
+/* ================= SCAN MODE ================= */
+
+const breaks = Array.from(document.querySelectorAll(".break"));
+let scanIndex = 0;
+
+function openBreak(i) {
+  const b = breaks[i];
+
+  // open parents
+  let parent = b.parentElement;
+  while (parent) {
+    if (parent.tagName === "DETAILS") parent.open = true;
+    parent = parent.parentElement;
+  }
+
+  b.open = true;
+}
+
+function startScan() {
+  stopScan();
+  scanInterval = setInterval(() => {
+    openBreak(scanIndex);
+    scanIndex = (scanIndex + 1) % breaks.length;
+  }, 8000); // change speed here
+}
+
+function stopScan() {
+  clearInterval(scanInterval);
+}
+
+/* ================= MODAL ================= */
+
 const modal = document.getElementById("modal");
 
 document.addEventListener("click", e => {
   if (e.target.tagName === "VIDEO" || e.target.tagName === "IFRAME") {
-    e.stopPropagation();
-
     modal.innerHTML = "";
     modal.style.display = "flex";
-
-    const clone = e.target.cloneNode(true);
-
-    if (clone.tagName === "IFRAME") {
-      clone.src += "?autoplay=1";
-    } else {
-      clone.controls = true;
-      clone.autoplay = true;
-    }
-
-    modal.appendChild(clone);
+    modal.appendChild(e.target.cloneNode(true));
   }
 });
 
