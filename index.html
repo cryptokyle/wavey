@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Beach Cam Dashboard</title>
 
-<!-- ✅ FIXED HLS SCRIPT -->
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 <style>
@@ -27,6 +26,7 @@ video, iframe {
   width:100%;
   height:600px;
   border-radius:10px;
+  border:none;
 }
 
 /* STATUS */
@@ -59,6 +59,7 @@ video, iframe {
   display:none;
   justify-content:center;
   align-items:center;
+  z-index:9999;
 }
 
 #modal video, #modal iframe {
@@ -74,14 +75,21 @@ video, iframe {
 
 <div id="modal" onclick="closeModal()"></div>
 
-<!-- ========== ALABAMA ========== -->
+<!-- ================= ALABAMA ================= -->
+
 <details class="state">
 <summary>Alabama</summary>
 
 <details class="city">
 <summary>Orange Beach</summary>
 
-<details class="break" data-type="hls" data-src="https://video.hummary>
+<details class="break" data-type="hls" data-src="https://video.hazcams.com/orange-beach-al-us-001<div class="status loading">LOADING</div>
+<div class="latency"></div>
+<video muted controls></video>
+</div>
+</details>
+
+<details class="break" data-type="hls" data-src="https://orangebeach.b-cdn.net/Alabama/orange-beliday Inn</summary>
 <div class="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
@@ -89,15 +97,7 @@ video, iframe {
 </div>
 </details>
 
-<details class="break" data-type="hls" data-src="https://orangebeach.b-cdn.net/Alabama/orange-beach-holiday-ummary>
-<div class="video-wrap">
-<div class="status loading">LOADING</div>
-<div class="latency"></div>
-<video muted controls></video>
-</div>
-</details>
-
-<details class="break" dataCam</summary>
+<details class="break" data-type="ytary>
 <div class="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
@@ -105,7 +105,8 @@ video, iframe {
 </div>
 </details>
 
-<details class="break" data-type="yt" data-src="pJqrjIuvGFEvideo-wrap">
+<details class="break" data-type="yt</summary>
+<div class="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <div class="player"></div>
@@ -117,22 +118,21 @@ video, iframe {
 <details class="city">
 <summary>Gulf Shores</summary>
 
-<details class="break" data-type="hls" data-src="https://video.hazcams.com/gulf-shores-al-us-001div class="video-wrap">
+<details class="break" data-type="hls" data-src="https://video.hazcams.com/gulf-shores-al-us-001/main_stream.m3u-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <video muted controls></video>
 </div>
 </details>
 
-<details class="break" data-type="yt"ary>
-<div class="video-wrap">
+<details class="break" data-type="yt" data-src="l2em7"video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <div class="player"></div>
 </div>
 </details>
 
-<details class="break" data-type="yt" data-src="g4fuUj6o-wrap">
+<details class="break" data-type="yt" data-src="g4fuideo-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <div class="player"></div>
@@ -144,8 +144,7 @@ video, iframe {
 <details class="city">
 <summary>Dauphin Island</summary>
 
-<details class="break" data-type="hls" data-src="https://video.hazcams.com/dauphin-island-al-us
-<div class="video-wrap">
+<details class="break" data-type="hls" data-src="https://video.hazcams.com/dauphin-island-al-us-002/main_streameo-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <video muted controls></video>
@@ -156,14 +155,16 @@ video, iframe {
 
 </details>
 
-<!-- ========== FLORIDA ========== -->
+<!-- ================= FLORIDA ================= -->
+
 <details class="state">
 <summary>Florida</summary>
 
 <details class="city">
 <summary>Inlet Beach</summary>
 
-<details class="break" data-type="hls" data-src="https://video.hazcams.com/inlet-beach-fl-us-001/main_stream.m3wrap">
+<details class="break" data-type="hls" data-src="https://video.hazcamsary>Main Cam</summary>
+<div class="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <video muted controls></video>
@@ -175,7 +176,7 @@ video, iframe {
 <details class="city">
 <summary>Okaloosa Island</summary>
 
-<details class="break" data-type="yt" data-src="QnvxSpZs="video-wrap">
+<details class="break" data-type="yt" data-src="Qv class="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <div class="player"></div>
@@ -187,7 +188,8 @@ video, iframe {
 <details class="city">
 <summary>Panama City Beach</summary>
 
-<details class="break" data-type="hls" data-src="https://video.hazcams.com/panama-city-beach-fl-us
+<details class="break" data-type="hls" data-src="https://videoeam.m3u8
+<summary>Main Cam</summary>
 <div class="video-wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
@@ -200,7 +202,7 @@ video, iframe {
 <details class="city">
 <summary>St. George Island</summary>
 
-<details class="break" data-type="hls" data-src="https://stgeorgelighthouse.cdn.coastalcameranetwork.com/Florida/stgeorgelighthouse.stream/chunklist.m3u-wrap">
+<details class="break" data-type="hls" data-src="https://stgeorgelighthouse.cdn.coastalcameranetwork.com/Florida/stgeorgelighthouse.stream/chunklist.m3u8wrap">
 <div class="status loading">LOADING</div>
 <div class="latency"></div>
 <video muted controls></video>
@@ -221,6 +223,7 @@ function setStatus(w,s){
   el.className="status "+s;
   el.textContent=s.toUpperCase();
 }
+
 function setLatency(w,t){
   w.querySelector(".latency").textContent=t+" ms";
 }
@@ -228,11 +231,10 @@ function setLatency(w,t){
 /* HLS */
 function playHLS(video,url,w){
   let start=performance.now();
-  setStatus(w,"loading");
 
   function load(useProxy=false){
     const hls=new Hls();
-    hls.loadSource(useProxy ? PROXY+encodeURIComponent(url):url);
+    hls.loadSource(useProxy?PROXY+encodeURIComponent(url):url);
     hls.attachMedia(video);
 
     hls.on(Hls.Events.MANIFEST_PARSED,()=>{
@@ -246,27 +248,31 @@ function playHLS(video,url,w){
     });
   }
 
+  setStatus(w,"loading");
   load();
 }
 
-/* YOUTUBE */
+/* ✅ FIXED YOUTUBE */
 function playYT(container,id,w){
   let start=performance.now();
   setStatus(w,"loading");
 
   const iframe=document.createElement("iframe");
-  iframe.src =
-    `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0`;
 
-  iframe.onload=()=>{
+  iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1`;
+
+  iframe.allow = "autoplay; encrypted-media";
+  iframe.allowFullscreen = true;
+
+  iframe.onload = () => {
     setStatus(w,"live");
     setLatency(w,Math.round(performance.now()-start));
   };
 
+  container.innerHTML = "";
   container.appendChild(iframe);
 }
 
-/* CLEAR */
 function clear(detail){
   const v=detail.querySelector("video");
   const p=detail.querySelector(".player");
@@ -279,7 +285,7 @@ function clear(detail){
   if(p) p.innerHTML="";
 }
 
-/* BREAK LOGIC */
+/* BREAK */
 document.querySelectorAll(".break").forEach(d=>{
   d.addEventListener("toggle",()=>{
     const wrap=d.querySelector(".video-wrap");
@@ -296,13 +302,11 @@ document.querySelectorAll(".break").forEach(d=>{
         playYT(d.querySelector(".player"),d.dataset.src,wrap);
       }
 
-    } else {
-      clear(d);
-    }
+    } else clear(d);
   });
 });
 
-/* CITY AUTOCOLLAPSE */
+/* CITY AUTO COLLAPSE */
 document.querySelectorAll(".state").forEach(state=>{
   const cities=state.querySelectorAll(".city");
 
@@ -319,7 +323,6 @@ document.querySelectorAll(".state").forEach(state=>{
 
 /* MODAL */
 const modal=document.getElementById("modal");
-
 document.addEventListener("click",e=>{
   if(e.target.tagName==="VIDEO" || e.target.tagName==="IFRAME"){
     modal.innerHTML="";
@@ -327,7 +330,6 @@ document.addEventListener("click",e=>{
     modal.appendChild(e.target.cloneNode(true));
   }
 });
-
 function closeModal(){
   modal.style.display="none";
   modal.innerHTML="";
