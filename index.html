@@ -1,119 +1,172 @@
-<!doctype html>
-<html lang="en" data-theme="chart">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gulf of Mexico Waves... Better Bryan?</title>
-  <link rel="stylesheet" href="./styles.css">
+  <meta charset="UTF-8">
+  <title>Live Beach Cams</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b0f14;
+      color: white;
+    }
+
+    h1 {
+      text-align: center;
+      padding: 16px;
+    }
+
+    details {
+      margin: 10px;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 10px;
+      background: #121821;
+    }
+
+    summary {
+      font-size: 1.4em;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .card {
+      background: #1a222d;
+      border-radius: 12px;
+      padding: 8px;
+    }
+
+    video, iframe {
+      width: 100%;
+      height: 250px;
+      border-radius: 8px;
+      border: none;
+    }
+
+    h3 {
+      margin: 6px 0;
+      font-size: 1em;
+    }
+  </style>
 </head>
+
 <body>
-  <div class="shell">
-    <header class="topbar">
-      <div class="titleBlock">
-        <div class="eyebrow">Static marine dashboard</div>
-        <h1>what would you suggest i put here bryan?</h1>
-        <p class="subtitle">NOAA buoy observations from a local snapshot, with bundled coastlines and borders so the page can stay fully static.</p>
-      </div>
-      <div class="toolbar">
-        <button id="theme" class="secondary" title="Toggle theme">Chart</button>
-        <select id="units" title="Waves and wind units">
-          <option value="imperial" selected>Imperial</option>
-          <option value="metric">Metric</option>
-        </select>
-        <select id="tempUnits" class="secondary" title="Temperature units">
-          <option value="auto" selected>Temp: Auto</option>
-          <option value="F">Temp: degF</option>
-          <option value="C">Temp: degC</option>
-        </select>
-        <button id="reload" title="Reload local snapshot">Reload Snapshot</button>
-      </div>
-    </header>
 
-    <main class="layout">
-      <section class="card hero">
-        <div class="cardHead">
-          <div>
-            <div class="cardTitle">Observation map</div>
-            <div class="cardHint">Marker size tracks wave height, color tracks dominant swell period.</div>
-          </div>
-          <div class="statusPill">Static source: <code>data/latest_obs.txt</code> via scheduled refresh</div>
-        </div>
+<h1>🌊 Live Beach Cameras</h1>
 
-        <div class="chipRow" id="badges"></div>
+<!-- ================= ALABAMA ================= -->
+<details>
+  <summary>Alabama</summary>
+  <div class="grid">
 
-        <div class="mapFrame" id="dropZone">
-          <canvas id="c"></canvas>
-          <div class="dropHint">Drop a NOAA text snapshot here to refresh the map.</div>
-        </div>
+    <div class="card">
+      <h3>Dauphin Island</h3>
+      <video id="vid1" controls autoplay muted></video>
+    </div>
 
-        <div class="below">
-          <div class="sectionLabel">Average dominant swell period by longitude bin</div>
-          <div id="periods" class="periodBar"></div>
-          <div id="legend" class="legend"></div>
-        </div>
-      </section>
+    <div class="card">
+      <h3>Gulf Shores</h3>
+      <video id="vid2" controls autoplay muted></video>
+    </div>
 
-      <aside class="rail">
-        <section class="card side">
-          <div class="sectionTitle">Snapshot controls</div>
-          <div id="statusBox" class="statusBox">
-            <div id="statusText" class="statusText">Waiting for local snapshot.</div>
-            <div id="statusMeta" class="statusMeta">Expected file: <code>data/latest_obs.txt</code></div>
-          </div>
+    <div class="card">
+      <h3>Beach Club (YouTube)</h3>
+      <iframe src="https://www.youtube.com/embed/l2em7gqBj00"></iframe>
+    </div>
 
-          <div class="buttonGrid">
-            <button id="reloadAside">Reload Snapshot</button>
-            <button id="importBtn" class="secondary">Import File</button>
-            <button id="clearData" class="secondary">Clear Data</button>
-          </div>
+    <div class="card">
+      <h3>Enclave (YouTube)</h3>
+      <iframe src="https://www.youtube.com/embed/g4fuUj6X7GY"></iframe>
+    </div>
 
-          <input id="filePicker" type="file" accept=".txt,text/plain" hidden>
+    <div class="card">
+      <h3>Orange Beach (Hazcams)</h3>
+      <video id="vid3" controls autoplay muted></video>
+    </div>
 
-          <label class="fieldLabel" for="stations">Station filter</label>
-          <div class="row">
-            <input id="stations" type="text" placeholder="42001 42002 42035">
-            <button id="applyFilter" class="secondary">Apply</button>
-          </div>
-          <div class="hint">Use station ids separated by spaces or commas.</div>
+    <div class="card">
+      <h3>Holiday Inn Stream</h3>
+      <video id="vid4" controls autoplay muted></video>
+    </div>
 
-          <div class="sectionTitle compact">Paste raw text</div>
-          <textarea id="t" placeholder="# Paste latest_obs.txt here"></textarea>
-          <div class="row end">
-            <button id="resetFilter" class="ghost">Reset Filter</button>
-            <button id="parse" class="secondary">Load Paste</button>
-          </div>
-        </section>
+    <div class="card">
+      <h3>Jetty Cam (YouTube)</h3>
+      <iframe src="https://www.youtube.com/embed/5Ijk8QsR-nw"></iframe>
+    </div>
 
-        <section class="card side">
-          <div class="sectionTitle">Snapshot summary</div>
-          <div class="metricGrid">
-            <div class="metric"><span class="metricLabel">Stations in view</span><span id="mStations" class="metricValue">--</span><span id="mStationsSub" class="metricSub">Waiting for data</span></div>
-            <div class="metric"><span class="metricLabel">Wave reports</span><span id="mWaves" class="metricValue">--</span><span id="mWavesSub" class="metricSub">Active observations</span></div>
-            <div class="metric"><span class="metricLabel">Max wave</span><span id="mMaxWave" class="metricValue">--</span><span id="mMaxWaveSub" class="metricSub">Peak sea state</span></div>
-            <div class="metric"><span class="metricLabel">Avg wave</span><span id="mAvgWave" class="metricValue">--</span><span id="mAvgWaveSub" class="metricSub">Across reporting stations</span></div>
-            <div class="metric"><span class="metricLabel">Strongest wind</span><span id="mWind" class="metricValue">--</span><span id="mWindSub" class="metricSub">Fastest sustained wind</span></div>
-            <div class="metric"><span class="metricLabel">Warmest water</span><span id="mWater" class="metricValue">--</span><span id="mWaterSub" class="metricSub">Surface water temp</span></div>
-            <div class="metric"><span class="metricLabel">Freshest obs</span><span id="mFresh" class="metricValue">--</span><span id="mFreshSub" class="metricSub">Newest station timestamp</span></div>
-            <div class="metric"><span class="metricLabel">Oldest obs</span><span id="mOld" class="metricValue">--</span><span id="mOldSub" class="metricSub">Earliest station timestamp</span></div>
-          </div>
-        </section>
+    <div class="card">
+      <h3>Turquoise Place (YouTube)</h3>
+      <iframe src="https://www.youtube.com/embed/pJqrjIuvGFE"></iframe>
+    </div>
 
-        <section class="card side">
-          <div class="sectionTitle">About this page</div>
-          <ul class="noteList">
-            <li>The map reads from <code>data/latest_obs.txt</code> when hosted as a static site.</li>
-            <li>A scheduled workflow can refresh that file every hour without adding a backend service.</li>
-            <li>If you open this page with <code>file://</code>, use Import File or drag in a NOAA text file to load fresh observations.</li>
-            <li>Land and borders are bundled from Natural Earth 1:50m geometry so the basemap stays local.</li>
-          </ul>
-        </section>
-      </aside>
-    </main>
   </div>
+</details>
 
-  <div id="tip"></div>
 
-  <script src="./data/gulf-map-data.js"></script>
-  <script src="./app.js"></script>
+<!-- ================= FLORIDA ================= -->
+<details>
+  <summary>Florida</summary>
+  <div class="grid">
+
+    <div class="card">
+      <h3>Inlet Beach</h3>
+      <video id="vid5" controls autoplay muted></video>
+    </div>
+
+    <div class="card">
+      <h3>Okaloosa Island (YouTube)</h3>
+      <iframe src="https://www.youtube.com/embed/QnvxSpZ9HPI"></iframe>
+    </div>
+
+    <div class="card">
+      <h3>Panama City Beach</h3>
+      <video id="vid6" controls autoplay muted></video>
+    </div>
+
+    <div class="card">
+      <h3>St. George Island</h3>
+      <video id="vid7" controls autoplay muted></video>
+    </div>
+
+  </div>
+</details>
+
+
+<script>
+function loadHLS(videoId, url) {
+  const video = document.getElementById(videoId);
+
+  if (Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(url);
+    hls.attachMedia(video);
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = url;
+  }
+}
+
+// Alabama streams
+loadHLS("vid1", "https://video.hazcams.com/dauphin-island-al-us-002/main_stream.m3u8");
+loadHLS("vid2", "https://video.hazcams.com/gulf-shores-al-us-001/main_stream.m3u8");
+loadHLS("vid3", "https://video.hazcams.com/orange-beach-al-us-001/main_stream.m3u8");
+loadHLS("vid4", "https://orangebeach.b-cdn.net/Alabama/orange-beach-holiday-inn.stream/chunklist.m3u8");
+
+// Florida streams
+loadHLS("vid5", "https://video.hazcams.com/inlet-beach-fl-us-001/main_stream.m3u8");
+loadHLS("vid6", "https://video.hazcams.com/panama-city-beachin_stream.m3u8");
+loadHLS("vid7", "https://stgeorgelighthouse.cdn.coastalcameranetwork.com/Florida/stgeorgelighthouse.stream/chunklist.m3u8");
+
+</script>
+
 </body>
 </html>
