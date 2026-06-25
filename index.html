@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Beach Cam Dashboard</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #121821;
+      --panel-2: #172231;
+      --border: #273243;
+      --text: #eef6ff;
+      --muted: #93a4b8;
+      --accent: #49b7ff;
+      --live: #148a42;
+      --loading: #d08a1d;
+      --offline: #b92828;
+      --button: #1d2d40;
+      --button-hover: #263b54;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top, #132234 0, var(--bg) 45%, #07090d 100%);
+      color: var(--text);
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(11, 15, 20, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(20px, 4vw, 30px);
+      letter-spacing: 0.02em;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    button {
+      cursor: pointer;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--button);
+      color: var(--text);
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+
+    button:hover { background: var(--button-hover); }
+
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 12px;
+    }
+
+    details {
+      margin: 8px 0;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(18, 24, 33, 0.92);
+      overflow: hidden;
+    }
+
+    summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 12px 14px;
+      font-weight: 700;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    summary::after {
+      content: "▸";
+      color: var(--muted);
+      transition: transform 0.15s ease;
+    }
+
+    details[open] > summary::after { transform: rotate(90deg); }
+
+    .state > summary {
+      background: linear-gradient(90deg, #172231, #101823);
+      font-size: 18px;
+    }
+
+    .city {
+      margin: 10px;
+      background: #101722;
+    }
+
+    .city > summary {
+      color: #dcecff;
+      background: #121d2a;
+    }
+
+    .break {
+      margin: 10px;
+      background: #0d141d;
+    }
+
+    .break > summary {
+      color: #f3f8ff;
+      background: #111a26;
+    }
+
+    .cam-meta {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 400;
+      margin-left: auto;
+    }
+
+    .video-wrap {
+      position: relative;
+      padding: 10px;
+      background: #05080c;
+    }
+
+    video,
+    iframe {
+      width: 100%;
+      height: min(68vh, 720px);
+      min-height: 320px;
+      border-radius: 10px;
+      border: 1px solid #1e2938;
+      background: #000;
+      display: block;
+    }
+
+    .player:empty {
+      display: none;
+    }
+
+    .overlay-row {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .pill-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .status,
+    .latency,
+    .source-label {
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      line-height: 1;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.78);
+      border: 1px solid rgba(255,255,255,0.15);
+      pointer-events: none;
+    }
+
+    .live { background: var(--live); }
+    .loading { background: var(--loading); }
+    .offline { background: var(--offline); }
+
+    .cam-actions {
+      padding: 8px 10px 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      background: #05080c;
+      border-top: 1px solid #1b2635;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      padding: 0 10px 10px;
+      background: #05080c;
+    }
+
+    #modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.94);
+      display: none;
+      z-index: 9999;
+      padding: 18px;
+    }
+
+    #modal.open {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+    }
+
+    .modal-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .modal-title {
+      color: var(--text);
+      font-weight: 700;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .modal-body video,
+    .modal-body iframe {
+      width: 100%;
+      height: calc(100vh - 88px);
+      min-height: 0;
+    }
+
+    .empty-state {
+      padding: 20px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+
+
+    .visitor-panel {
+      max-width: 1400px;
+      margin: 12px auto 0;
+      padding: 0 12px;
+    }
+
+    .visitor-card-shell {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(18, 24, 33, 0.94);
+      padding: 12px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+    }
+
+    .visitor-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .visitor-title-row h2 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: 0.02em;
+    }
+
+    .visitor-subtitle {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .visitor-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 10px;
+    }
+
+    .visitor-stat {
+      border: 1px solid #223149;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #101a27, #0b111a);
+      padding: 12px;
+    }
+
+    .visitor-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .visitor-value {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .visitor-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .visitor-footer code {
+      color: #cfe7ff;
+      background: #0b111a;
+      border: 1px solid #223149;
+      border-radius: 6px;
+      padding: 2px 5px;
+    }
+
+    @media (max-width: 700px) {
+      header {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .header-actions { justify-content: flex-start; }
+      .visitor-grid { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+      video, iframe { height: 52vh; min-height: 260px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌊 Beach Cam Dashboard</h1>
+    <div class="header-actions">
+      <button type="button" id="visitorStatsBtn">Visitor Stats</button>
+      <button type="button" id="collapseAllBtn">Collapse All</button>
+      <button type="button" id="stopAllBtn">Stop Streams</button>
+    </div>
+  </header>
+
+  <section id="visitorStatsPanel" class="visitor-panel" hidden>
+    <div class="visitor-card-shell">
+      <div class="visitor-title-row">
+        <div>
+          <h2>Visitor Tracking</h2>
+          <div class="visitor-subtitle" id="visitorMode">Local browser tracking active. Add a remote endpoint for all-visitor GitHub Pages analytics.</div>
+        </div>
+        <button type="button" id="resetLocalStatsBtn">Reset Local Stats</button>
+      </div>
+      <div class="visitor-grid">
+        <div class="visitor-stat">
+          <div class="visitor-label">Today</div>
+          <div class="visitor-value" id="visitorsToday">0</div>
+        </div>
+        <div class="visitor-stat">
+          <div class="visitor-label">This Week</div>
+          <div class="visitor-value" id="visitorsWeek">0</div>
+        </div>
+        <div class="visitor-stat">
+          <div class="visitor-label">This Year</div>
+          <div class="visitor-value" id="visitorsYear">0</div>
+        </div>
+        <div class="visitor-stat">
+          <div class="visitor-label">Total Sessions</div>
+          <div class="visitor-value" id="visitorsTotal">0</div>
+        </div>
+      </div>
+      <div class="visitor-footer">
+        <span id="visitorLastSeen">Last session: --</span>
+        <span>GitHub Pages is static, so real aggregate counts require <code>VISITOR_TRACKING_ENDPOINT</code>.</span>
+      </div>
+    </div>
+  </section>
+
+  <main id="app"></main>
+
+  <div id="modal" aria-hidden="true">
+    <div class="modal-bar">
+      <div class="modal-title" id="modalTitle">Beach Cam</div>
+      <button type="button" id="modalCloseBtn">Close</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+
+  <script>
+    // Optional CORS proxy for HLS streams that block browser playback.
+    // Example: const PROXY = "https://YOUR-PROXY.onrender.com/hls?url=";
+    const PROXY = "";
+
+
+
+    // GitHub Pages cannot save global visitor counts by itself.
+    // Local tracking works immediately in this browser.
+    // For real all-visitor tracking, set VISITOR_TRACKING_ENDPOINT to a serverless endpoint
+    // that accepts POST events and returns GET summaries.
+    const VISITOR_TRACKING_ENDPOINT = "";
+    const VISITOR_SITE_ID = "beach-cam-dashboard";
+    const VISITOR_STORAGE_KEY = "beachCamVisitorStats.v1";
+    const VISITOR_ID_KEY = "beachCamVisitorId.v1";
+    const VISITOR_SESSION_MINUTES = 30;
+
+    function pad2(value) {
+      return String(value).padStart(2, "0");
+    }
+
+    function localDateKey(date = new Date()) {
+      return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+    }
+
+    function localYearKey(date = new Date()) {
+      return String(date.getFullYear());
+    }
+
+    function localWeekKey(date = new Date()) {
+      // Sunday-start week, matching common US calendar layout.
+      const copy = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      copy.setDate(copy.getDate() - copy.getDay());
+      return `${copy.getFullYear()}-W-${pad2(copy.getMonth() + 1)}-${pad2(copy.getDate())}`;
+    }
+
+    function getVisitorId() {
+      let id = localStorage.getItem(VISITOR_ID_KEY);
+      if (!id) {
+        id = window.crypto && crypto.randomUUID ? crypto.randomUUID() : `visitor-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        localStorage.setItem(VISITOR_ID_KEY, id);
+      }
+      return id;
+    }
+
+    function readVisitorStats() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(VISITOR_STORAGE_KEY));
+        if (parsed && typeof parsed === "object") return parsed;
+      } catch {}
+      return {
+        version: 1,
+        lastSessionAt: 0,
+        sessions: []
+      };
+    }
+
+    function writeVisitorStats(stats) {
+      // Keep roughly 3 years of local sessions so the browser storage does not grow forever.
+      const cutoff = Date.now() - 1000 * 60 * 60 * 24 * 366 * 3;
+      stats.sessions = (stats.sessions || []).filter(session => Number(session.ts) >= cutoff);
+      localStorage.setItem(VISITOR_STORAGE_KEY, JSON.stringify(stats));
+    }
+
+    function countLocalStats(stats) {
+      const today = localDateKey();
+      const week = localWeekKey();
+      const year = localYearKey();
+      const sessions = stats.sessions || [];
+      return {
+        today: sessions.filter(session => session.day === today).length,
+        week: sessions.filter(session => session.week === week).length,
+        year: sessions.filter(session => session.year === year).length,
+        total: sessions.length,
+        lastSessionAt: stats.lastSessionAt || 0
+      };
+    }
+
+    function updateVisitorUI(summary, mode = "Local browser tracking active") {
+      document.getElementById("visitorsToday").textContent = summary.today ?? 0;
+      document.getElementById("visitorsWeek").textContent = summary.week ?? 0;
+      document.getElementById("visitorsYear").textContent = summary.year ?? 0;
+      document.getElementById("visitorsTotal").textContent = summary.total ?? 0;
+      document.getElementById("visitorMode").textContent = mode;
+
+      const lastSeen = summary.lastSessionAt ? new Date(summary.lastSessionAt).toLocaleString() : "--";
+      document.getElementById("visitorLastSeen").textContent = `Last session: ${lastSeen}`;
+    }
+
+    async function postRemoteVisit(eventPayload) {
+      if (!VISITOR_TRACKING_ENDPOINT) return null;
+      const response = await fetch(VISITOR_TRACKING_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(eventPayload),
+        keepalive: true
+      });
+      if (!response.ok) throw new Error(`Tracking POST failed: ${response.status}`);
+      return response.json().catch(() => null);
+    }
+
+    async function fetchRemoteSummary() {
+      if (!VISITOR_TRACKING_ENDPOINT) return null;
+      const url = new URL(VISITOR_TRACKING_ENDPOINT, location.href);
+      url.searchParams.set("summary", "1");
+      url.searchParams.set("site", VISITOR_SITE_ID);
+      url.searchParams.set("day", localDateKey());
+      url.searchParams.set("week", localWeekKey());
+      url.searchParams.set("year", localYearKey());
+      const response = await fetch(url.toString(), { cache: "no-store" });
+      if (!response.ok) throw new Error(`Tracking summary failed: ${response.status}`);
+      return response.json();
+    }
+
+    async function trackVisitorSession() {
+      const now = new Date();
+      const nowTs = now.getTime();
+      const stats = readVisitorStats();
+      const lastTs = Number(stats.lastSessionAt || 0);
+      const minutesSinceLast = lastTs ? (nowTs - lastTs) / 60000 : Infinity;
+      const shouldCountSession = minutesSinceLast >= VISITOR_SESSION_MINUTES || localDateKey(new Date(lastTs || 0)) !== localDateKey(now);
+
+      const visitorId = getVisitorId();
+      const eventPayload = {
+        site: VISITOR_SITE_ID,
+        visitorId,
+        url: location.pathname,
+        referrer: document.referrer || "",
+        userAgent: navigator.userAgent,
+        day: localDateKey(now),
+        week: localWeekKey(now),
+        year: localYearKey(now),
+        ts: nowTs,
+        countedSession: shouldCountSession
+      };
+
+      if (shouldCountSession) {
+        stats.lastSessionAt = nowTs;
+        stats.sessions.push({
+          ts: nowTs,
+          day: eventPayload.day,
+          week: eventPayload.week,
+          year: eventPayload.year,
+          path: location.pathname
+        });
+        writeVisitorStats(stats);
+      }
+
+      updateVisitorUI(countLocalStats(stats));
+
+      try {
+        await postRemoteVisit(eventPayload);
+        const remoteSummary = await fetchRemoteSummary();
+        if (remoteSummary) {
+          updateVisitorUI(remoteSummary, "Remote all-visitor tracking active");
+        }
+      } catch (error) {
+        console.warn("Visitor tracking remote endpoint unavailable; using local stats only.", error);
+        updateVisitorUI(countLocalStats(readVisitorStats()), "Local tracking active. Remote endpoint unavailable.");
+      }
+    }
+
+    function resetLocalVisitorStats() {
+      localStorage.removeItem(VISITOR_STORAGE_KEY);
+      updateVisitorUI(countLocalStats(readVisitorStats()), "Local browser tracking reset");
+    }
+
+
+    const CAMS = [
+      {
+        state: "Alabama",
+        cities: [
+          {
+            name: "Dauphin Island",
+            cams: [
+              {
+                name: "Dauphin Island Main Cam",
+                type: "hls",
+                src: "https://video.hazcams.com/dauphin-island-al-us-002/main_stream.m3u8"
+              }
+            ]
+          },
+          {
+            name: "Gulf Shores",
+            cams: [
+              {
+                name: "Gulf Shores Main Cam",
+                type: "hls",
+                src: "https://video.hazcams.com/gulf-shores-al-us-001/main_stream.m3u8"
+              },
+              {
+                name: "Beach Club YouTube Cam",
+                type: "yt",
+                src: "l2em7gqBj00"
+              },
+              {
+                name: "Enclave YouTube Cam",
+                type: "yt",
+                src: "g4fuUj6X7GY"
+              }
+            ]
+          },
+          {
+            name: "Orange Beach",
+            cams: [
+              {
+                name: "Orange Beach Main Cam",
+                type: "hls",
+                src: "https://video.hazcams.com/orange-beach-al-us-001/main_stream.m3u8"
+              },
+              {
+                name: "Holiday Inn Cam",
+                type: "hls",
+                src: "https://orangebeach.b-cdn.net/Alabama/orange-beach-holiday-inn.stream/chunklist.m3u8"
+              },
+              {
+                name: "Jetty YouTube Cam",
+                type: "yt",
+                src: "5Ijk8QsR-nw"
+              },
+              {
+                name: "Turquoise / Cove YouTube Cam",
+                type: "yt",
+                src: "pJqrjIuvGFE"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        state: "Florida",
+        cities: [
+          {
+            name: "Inlet Beach",
+            cams: [
+              {
+                name: "Inlet Beach Main Cam",
+                type: "hls",
+                src: "https://video.hazcams.com/inlet-beach-fl-us-001/main_stream.m3u8"
+              }
+            ]
+          },
+          {
+            name: "Okaloosa Island",
+            cams: [
+              {
+                name: "Wyndham Garden YouTube Cam",
+                type: "yt",
+                src: "QnvxSpZ9HPI"
+              }
+            ]
+          },
+          {
+            name: "Panama City Beach",
+            cams: [
+              {
+                name: "Panama City Beach Main Cam",
+                type: "hls",
+                src: "https://video.hazcams.com/panama-city-beach-fl-us-001/main_stream.m3u8"
+              }
+            ]
+          },
+          {
+            name: "St. George Island",
+            cams: [
+              {
+                name: "St. George Lighthouse Cam",
+                type: "hls",
+                src: "https://stgeorgelighthouse.cdn.coastalcameranetwork.com/Florida/stgeorgelighthouse.stream/chunklist.m3u8"
+              }
+            ]
+          }
+        ]
+      }
+    ];
+
+    const app = document.getElementById("app");
+    const modal = document.getElementById("modal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalBody = document.getElementById("modalBody");
+    const activeHls = new WeakMap();
+    let activeBreak = null;
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function setStatus(wrap, status, message) {
+      const el = wrap.querySelector(".status");
+      el.className = "status " + status;
+      el.textContent = message || status.toUpperCase();
+    }
+
+    function setLatency(wrap, ms) {
+      const el = wrap.querySelector(".latency");
+      el.textContent = Number.isFinite(ms) ? ms + " ms" : "-- ms";
+    }
+
+    function destroyHls(video) {
+      const hls = activeHls.get(video);
+      if (hls) {
+        hls.destroy();
+        activeHls.delete(video);
+      }
+    }
+
+    function stopVideo(video) {
+      if (!video) return;
+      destroyHls(video);
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+    }
+
+    function isValidYouTubeId(id) {
+      return /^[a-zA-Z0-9_-]{11}$/.test(id || "");
+    }
+
+    function isValidHlsUrl(url) {
+      return /^https?:\/\/.+\.m3u8(\?.*)?$/i.test(url || "");
+    }
+
+    function playHls(video, url, wrap, useProxy = false) {
+      const start = performance.now();
+      const finalUrl = useProxy && PROXY ? PROXY + encodeURIComponent(url) : url;
+
+      stopVideo(video);
+      setStatus(wrap, "loading");
+      setLatency(wrap, NaN);
+
+      if (!isValidHlsUrl(url)) {
+        setStatus(wrap, "offline", "BAD HLS URL");
+        return;
+      }
+
+      // Safari / iOS native HLS support.
+      if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = finalUrl;
+        video.muted = true;
+        video.controls = true;
+        video.playsInline = true;
+
+        video.onloadedmetadata = () => {
+          setStatus(wrap, "live");
+          setLatency(wrap, Math.round(performance.now() - start));
+          video.play().catch(() => {});
+        };
+
+        video.onerror = () => {
+          if (!useProxy && PROXY) playHls(video, url, wrap, true);
+          else setStatus(wrap, "offline");
+        };
+        return;
+      }
+
+      if (!window.Hls || !Hls.isSupported()) {
+        setStatus(wrap, "offline", "HLS NOT SUPPORTED");
+        return;
+      }
+
+      const hls = new Hls({
+        lowLatencyMode: true,
+        backBufferLength: 30,
+        liveSyncDurationCount: 2,
+        liveMaxLatencyDurationCount: 5
+      });
+
+      activeHls.set(video, hls);
+      hls.loadSource(finalUrl);
+      hls.attachMedia(video);
+
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        setStatus(wrap, "live");
+        setLatency(wrap, Math.round(performance.now() - start));
+        video.muted = true;
+        video.controls = true;
+        video.play().catch(() => {});
+      });
+
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        if (!data || !data.fatal) return;
+
+        if (!useProxy && PROXY) {
+          destroyHls(video);
+          playHls(video, url, wrap, true);
+          return;
+        }
+
+        destroyHls(video);
+        setStatus(wrap, "offline");
+      });
+    }
+
+    function playYouTube(container, id, wrap) {
+      const start = performance.now();
+      container.innerHTML = "";
+      setStatus(wrap, "loading");
+      setLatency(wrap, NaN);
+
+      if (!isValidYouTubeId(id)) {
+        setStatus(wrap, "offline", "BAD YT ID");
+        return;
+      }
+
+      const iframe = document.createElement("iframe");
+      iframe.src = `https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1`;
+      iframe.title = "YouTube beach cam";
+      iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+      iframe.referrerPolicy = "strict-origin-when-cross-origin";
+      iframe.allowFullscreen = true;
+
+      iframe.onload = () => {
+        setStatus(wrap, "live");
+        setLatency(wrap, Math.round(performance.now() - start));
+      };
+
+      container.appendChild(iframe);
+    }
+
+    function clearBreak(detail) {
+      const video = detail.querySelector("video");
+      const player = detail.querySelector(".player");
+      const wrap = detail.querySelector(".video-wrap");
+
+      stopVideo(video);
+      if (player) player.innerHTML = "";
+      if (wrap) {
+        setStatus(wrap, "loading", "READY");
+        setLatency(wrap, NaN);
+      }
+    }
+
+    function startBreak(detail) {
+      const wrap = detail.querySelector(".video-wrap");
+      const type = detail.dataset.type;
+      const src = detail.dataset.src;
+
+      if (type === "hls") {
+        playHls(detail.querySelector("video"), src, wrap);
+      } else if (type === "yt") {
+        playYouTube(detail.querySelector(".player"), src, wrap);
+      } else {
+        setStatus(wrap, "offline", "BAD TYPE");
+      }
+    }
+
+    function openModalFromBreak(detail) {
+      const type = detail.dataset.type;
+      const src = detail.dataset.src;
+      const title = detail.dataset.name || "Beach Cam";
+
+      modalTitle.textContent = title;
+      modalBody.innerHTML = "";
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden", "false");
+
+      const shell = document.createElement("div");
+      shell.className = "video-wrap";
+      shell.innerHTML = `
+        <div class="overlay-row">
+          <div class="pill-row">
+            <div class="status loading">LOADING</div>
+            <div class="source-label">${type.toUpperCase()}</div>
+          </div>
+          <div class="latency">-- ms</div>
+        </div>
+      `;
+
+      if (type === "hls") {
+        const video = document.createElement("video");
+        video.muted = true;
+        video.controls = true;
+        video.playsInline = true;
+        shell.appendChild(video);
+        modalBody.appendChild(shell);
+        playHls(video, src, shell);
+      } else {
+        const player = document.createElement("div");
+        player.className = "player";
+        shell.appendChild(player);
+        modalBody.appendChild(shell);
+        playYouTube(player, src, shell);
+      }
+    }
+
+    function closeModal() {
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+      const video = modalBody.querySelector("video");
+      stopVideo(video);
+      modalBody.innerHTML = "";
+    }
+
+    function render() {
+      if (!CAMS.length) {
+        app.innerHTML = '<div class="empty-state">No cams configured.</div>';
+        return;
+      }
+
+      app.innerHTML = CAMS.map((state, stateIndex) => `
+        <details class="state" data-state-index="${stateIndex}">
+          <summary>${escapeHtml(state.state)}</summary>
+          ${state.cities.map((city, cityIndex) => `
+            <details class="city" data-city-index="${cityIndex}">
+              <summary>${escapeHtml(city.name)}</summary>
+              ${city.cams.map((cam, camIndex) => `
+                <details
+                  class="break"
+                  data-type="${escapeHtml(cam.type)}"
+                  data-src="${escapeHtml(cam.src)}"
+                  data-name="${escapeHtml(cam.name)}"
+                  data-cam-index="${camIndex}"
+                >
+                  <summary>
+                    <span>${escapeHtml(cam.name)}</span>
+                    <span class="cam-meta">${escapeHtml(cam.type.toUpperCase())}</span>
+                  </summary>
+                  <div class="video-wrap">
+                    <div class="overlay-row">
+                      <div class="pill-row">
+                        <div class="status loading">READY</div>
+                        <div class="source-label">${escapeHtml(cam.type.toUpperCase())}</div>
+                      </div>
+                      <div class="latency">-- ms</div>
+                    </div>
+                    ${cam.type === "hls" ? '<video muted controls playsinline></video>' : '<div class="player"></div>'}
+                  </div>
+                  <div class="cam-actions">
+                    <button type="button" class="reload-btn">Reload</button>
+                    <button type="button" class="modal-btn">Open Large</button>
+                    <button type="button" class="copy-btn">Copy Source</button>
+                  </div>
+                  <div class="note">Only one cam plays at a time to avoid crushing bandwidth. If an HLS stream fails because of browser CORS rules, add your proxy URL in the PROXY constant near the top of the script.</div>
+                </details>
+              `).join("")}
+            </details>
+          `).join("")}
+        </details>
+      `).join("");
+
+      wireEvents();
+    }
+
+    function wireEvents() {
+      document.querySelectorAll(".break").forEach(detail => {
+        detail.addEventListener("toggle", () => {
+          if (detail.open) {
+            if (activeBreak && activeBreak !== detail) {
+              activeBreak.open = false;
+              clearBreak(activeBreak);
+            }
+            activeBreak = detail;
+            startBreak(detail);
+          } else {
+            clearBreak(detail);
+            if (activeBreak === detail) activeBreak = null;
+          }
+        });
+
+        detail.querySelector(".reload-btn").addEventListener("click", event => {
+          event.stopPropagation();
+          if (!detail.open) detail.open = true;
+          else startBreak(detail);
+        });
+
+        detail.querySelector(".modal-btn").addEventListener("click", event => {
+          event.stopPropagation();
+          openModalFromBreak(detail);
+        });
+
+        detail.querySelector(".copy-btn").addEventListener("click", async event => {
+          event.stopPropagation();
+          try {
+            await navigator.clipboard.writeText(detail.dataset.src);
+            event.currentTarget.textContent = "Copied";
+            setTimeout(() => { event.currentTarget.textContent = "Copy Source"; }, 900);
+          } catch {
+            alert(detail.dataset.src);
+          }
+        });
+      });
+
+      document.querySelectorAll(".state").forEach(state => {
+        const cities = state.querySelectorAll(":scope > .city");
+        cities.forEach(city => {
+          city.addEventListener("toggle", () => {
+            if (!city.open) return;
+            cities.forEach(other => {
+              if (other !== city) other.open = false;
+            });
+          });
+        });
+      });
+    }
+
+    document.getElementById("collapseAllBtn").addEventListener("click", () => {
+      document.querySelectorAll("details").forEach(detail => {
+        detail.open = false;
+      });
+      if (activeBreak) clearBreak(activeBreak);
+      activeBreak = null;
+    });
+
+    document.getElementById("stopAllBtn").addEventListener("click", () => {
+      document.querySelectorAll(".break").forEach(clearBreak);
+      activeBreak = null;
+    });
+
+    document.getElementById("modalCloseBtn").addEventListener("click", closeModal);
+    modal.addEventListener("click", event => {
+      if (event.target === modal) closeModal();
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") closeModal();
+    });
+
+
+
+    document.getElementById("visitorStatsBtn").addEventListener("click", () => {
+      const panel = document.getElementById("visitorStatsPanel");
+      panel.hidden = !panel.hidden;
+    });
+
+    document.getElementById("resetLocalStatsBtn").addEventListener("click", resetLocalVisitorStats);
+
+    trackVisitorSession();
+
+    render();
+  </script>
+</body>
+</html>
