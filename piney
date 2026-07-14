@@ -1,0 +1,339 @@
+//@version=6
+indicator(
+     title = "Multi-Timeframe Green vs Red Candle Counter",
+     shorttitle = "MTF Candle Counter",
+     overlay = true
+)
+
+//──────────────────────────────────────────────────────────────────────────────
+// Inputs
+//──────────────────────────────────────────────────────────────────────────────
+
+countMode = input.string(
+     defval  = "From selected date",
+     title   = "Counting period",
+     options = ["From selected date", "All available history"]
+)
+
+startDate = input.time(
+     defval  = timestamp("01 Jan 2025 00:00 +0000"),
+     title   = "Start date"
+)
+
+includeOpenCandle = input.bool(
+     defval = false,
+     title  = "Include currently open candles",
+     tooltip = "When disabled, only completed candles are counted."
+)
+
+showDojis = input.bool(
+     defval = true,
+     title  = "Show doji candles",
+     tooltip = "A doji is any candle where close equals open exactly."
+)
+
+tablePositionInput = input.string(
+     defval  = "Top Right",
+     title   = "Table position",
+     options = [
+         "Top Left",
+         "Top Center",
+         "Top Right",
+         "Middle Left",
+         "Middle Center",
+         "Middle Right",
+         "Bottom Left",
+         "Bottom Center",
+         "Bottom Right"
+     ]
+)
+
+//──────────────────────────────────────────────────────────────────────────────
+// Table position
+//──────────────────────────────────────────────────────────────────────────────
+
+tablePosition = switch tablePositionInput
+    "Top Left"      => position.top_left
+    "Top Center"    => position.top_center
+    "Top Right"     => position.top_right
+    "Middle Left"   => position.middle_left
+    "Middle Center" => position.middle_center
+    "Middle Right"  => position.middle_right
+    "Bottom Left"   => position.bottom_left
+    "Bottom Center" => position.bottom_center
+    => position.bottom_right
+
+//──────────────────────────────────────────────────────────────────────────────
+// Counting function
+//
+// This function executes inside each requested timeframe.
+// That prevents repeated 15-minute, 4-hour, daily, or weekly values from being
+// counted multiple times on charts using a different timeframe.
+//──────────────────────────────────────────────────────────────────────────────
+
+f_countCandles() =>
+    bool dateAllowed =
+         countMode == "All available history" or time >= startDate
+
+    bool candleAllowed =
+         dateAllowed and (includeOpenCandle or barstate.isconfirmed)
+
+    int greenValue = candleAllowed and close > open ? 1 : 0
+    int redValue   = candleAllowed and close < open ? 1 : 0
+    int dojiValue  = candleAllowed and close == open ? 1 : 0
+
+    int greenTotal = int(ta.cum(greenValue))
+    int redTotal   = int(ta.cum(redValue))
+    int dojiTotal  = int(ta.cum(dojiValue))
+
+    [greenTotal, redTotal, dojiTotal]
+
+//──────────────────────────────────────────────────────────────────────────────
+// Request counts from each timeframe
+//──────────────────────────────────────────────────────────────────────────────
+
+[green15m, red15m, doji15m] = request.security(
+     syminfo.tickerid,
+     "15",
+     f_countCandles(),
+     gaps = barmerge.gaps_off,
+     lookahead = barmerge.lookahead_off
+)
+
+[green4h, red4h, doji4h] = request.security(
+     syminfo.tickerid,
+     "240",
+     f_countCandles(),
+     gaps = barmerge.gaps_off,
+     lookahead = barmerge.lookahead_off
+)
+
+[green1d, red1d, doji1d] = request.security(
+     syminfo.tickerid,
+     "1D",
+     f_countCandles(),
+     gaps = barmerge.gaps_off,
+     lookahead = barmerge.lookahead_off
+)
+
+[green1w, red1w, doji1w] = request.security(
+     syminfo.tickerid,
+     "1W",
+     f_countCandles(),
+     gaps = barmerge.gaps_off,
+     lookahead = barmerge.lookahead_off
+)
+
+//──────────────────────────────────────────────────────────────────────────────
+// Helper functions
+//──────────────────────────────────────────────────────────────────────────────
+
+f_total(int green, int red, int doji) =>
+    green + red + doji
+
+f_percent(int value, int total) =>
+    total > 0 ? value * 100.0 / total : 0.0
+
+f_countText(int value, int total) =>
+    str.tostring(value, "#,###") +
+     " (" +
+     str.tostring(f_percent(value, total), "#.##") +
+     "%)"
+
+f_differenceText(int green, int red) =>
+    int difference = green - red
+
+    difference > 0 ?
+         "+" + str.tostring(difference, "#,###") + " Green" :
+     difference < 0 ?
+         "+" + str.tostring(math.abs(difference), "#,###") + " Red" :
+         "Even"
+
+//──────────────────────────────────────────────────────────────────────────────
+// Totals
+//──────────────────────────────────────────────────────────────────────────────
+
+total15m = f_total(green15m, red15m, doji15m)
+total4h  = f_total(green4h, red4h, doji4h)
+total1d  = f_total(green1d, red1d, doji1d)
+total1w  = f_total(green1w, red1w, doji1w)
+
+//──────────────────────────────────────────────────────────────────────────────
+// Table
+//──────────────────────────────────────────────────────────────────────────────
+
+int columnCount = showDojis ? 6 : 5
+
+var table resultsTable = table.new(
+     tablePosition,
+     columnCount,
+     7,
+     border_width = 1
+)
+
+f_headerCell(int column, int row, string text) =>
+    table.cell(
+         resultsTable,
+         column,
+         row,
+         text,
+         text_color = color.white,
+         bgcolor = color.rgb(45, 45, 45),
+         text_halign = text.align_center
+    )
+
+f_dataCell(
+     int column,
+     int row,
+     string text,
+     color backgroundColor,
+     color textColor
+) =>
+    table.cell(
+         resultsTable,
+         column,
+         row,
+         text,
+         text_color = textColor,
+         bgcolor = backgroundColor,
+         text_halign = text.align_center
+    )
+
+f_drawRow(
+     int row,
+     string timeframeName,
+     int green,
+     int red,
+     int doji
+) =>
+    int total = f_total(green, red, doji)
+
+    f_dataCell(
+         0,
+         row,
+         timeframeName,
+         color.new(color.gray, 80),
+         color.white
+    )
+
+    f_dataCell(
+         1,
+         row,
+         f_countText(green, total),
+         color.new(color.green, 75),
+         color.white
+    )
+
+    f_dataCell(
+         2,
+         row,
+         f_countText(red, total),
+         color.new(color.red, 75),
+         color.white
+    )
+
+    int nextColumn = 3
+
+    if showDojis
+        f_dataCell(
+             3,
+             row,
+             f_countText(doji, total),
+             color.new(color.gray, 65),
+             color.white
+        )
+
+        nextColumn := 4
+
+    f_dataCell(
+         nextColumn,
+         row,
+         str.tostring(total, "#,###"),
+         color.new(color.blue, 80),
+         color.white
+    )
+
+    color differenceColor =
+         green > red ? color.new(color.green, 75) :
+         red > green ? color.new(color.red, 75) :
+         color.new(color.gray, 70)
+
+    f_dataCell(
+         nextColumn + 1,
+         row,
+         f_differenceText(green, red),
+         differenceColor,
+         color.white
+    )
+
+if barstate.islast
+    table.clear(
+         resultsTable,
+         start_column = 0,
+         start_row = 0,
+         end_column = columnCount - 1,
+         end_row = 6
+    )
+
+    // Title
+    table.cell(
+         resultsTable,
+         0,
+         0,
+         syminfo.ticker + " — Candle Statistics",
+         text_color = color.white,
+         bgcolor = color.rgb(20, 20, 20),
+         text_halign = text.align_center
+    )
+
+    table.merge_cells(
+         resultsTable,
+         0,
+         0,
+         columnCount - 1,
+         0
+    )
+
+    // Period information
+    string periodText =
+         countMode == "All available history" ?
+         "Period: All history available to TradingView" :
+         "Period: From " + str.format_time(startDate, "yyyy-MM-dd", "UTC")
+
+    table.cell(
+         resultsTable,
+         0,
+         1,
+         periodText,
+         text_color = color.silver,
+         bgcolor = color.rgb(30, 30, 30),
+         text_halign = text.align_center
+    )
+
+    table.merge_cells(
+         resultsTable,
+         0,
+         1,
+         columnCount - 1,
+         1
+    )
+
+    // Headers
+    f_headerCell(0, 2, "Timeframe")
+    f_headerCell(1, 2, "Green")
+    f_headerCell(2, 2, "Red")
+
+    int headerColumn = 3
+
+    if showDojis
+        f_headerCell(3, 2, "Doji")
+        headerColumn := 4
+
+    f_headerCell(headerColumn, 2, "Total")
+    f_headerCell(headerColumn + 1, 2, "Advantage")
+
+    // Results
+    f_drawRow(3, "15 Minute", green15m, red15m, doji15m)
+    f_drawRow(4, "4 Hour",    green4h,  red4h,  doji4h)
+    f_drawRow(5, "Daily",     green1d,  red1d,  doji1d)
+    f_drawRow(6, "Weekly",    green1w,  red1w,  doji1w)
