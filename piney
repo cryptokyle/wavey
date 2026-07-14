@@ -6,30 +6,47 @@ indicator(
 )
 
 //──────────────────────────────────────────────────────────────────────────────
-// Inputs
+// Counting-period inputs
 //──────────────────────────────────────────────────────────────────────────────
 
 countMode = input.string(
-     defval = "From selected date",
+     defval = "Selected date range",
      title = "Counting period",
-     options = ["From selected date", "All available history"]
+     options = [
+         "Selected date range",
+         "All available history"
+     ],
+     group = "Counting Period"
 )
 
 startDate = input.time(
      defval = timestamp("01 Jan 2025 00:00 +0000"),
-     title = "Start date"
+     title = "Start date and time",
+     group = "Counting Period"
+)
+
+endDate = input.time(
+     defval = timestamp("31 Dec 2026 23:59 +0000"),
+     title = "End date and time",
+     group = "Counting Period"
 )
 
 includeOpenCandle = input.bool(
      defval = false,
      title = "Include currently open candles",
-     tooltip = "When disabled, only completed candles are counted."
+     tooltip = "When disabled, only completed candles are counted.",
+     group = "Counting Period"
 )
+
+//──────────────────────────────────────────────────────────────────────────────
+// Display inputs
+//──────────────────────────────────────────────────────────────────────────────
 
 showDojis = input.bool(
      defval = true,
      title = "Show doji candles",
-     tooltip = "A doji is a candle where the close equals the open."
+     tooltip = "A doji is a candle where the close equals the open.",
+     group = "Display"
 )
 
 tablePositionInput = input.string(
@@ -45,7 +62,8 @@ tablePositionInput = input.string(
          "Bottom Left",
          "Bottom Center",
          "Bottom Right"
-     ]
+     ],
+     group = "Display"
 )
 
 //──────────────────────────────────────────────────────────────────────────────
@@ -64,20 +82,39 @@ tablePosition = switch tablePositionInput
     => position.bottom_right
 
 //──────────────────────────────────────────────────────────────────────────────
+// Date-range validation
+//──────────────────────────────────────────────────────────────────────────────
+
+bool validDateRange = startDate <= endDate
+
+//──────────────────────────────────────────────────────────────────────────────
 // Candle-counting function
-// Runs separately inside each requested timeframe.
+//
+// This function runs independently inside each requested timeframe.
+// A candle is included when its opening timestamp falls within the selected
+// start and end timestamps.
 //──────────────────────────────────────────────────────────────────────────────
 
 f_countCandles() =>
+    bool insideSelectedRange =
+         time >= startDate and time <= endDate
+
     bool dateAllowed =
-         countMode == "All available history" or time >= startDate
+         countMode == "All available history" or insideSelectedRange
 
     bool candleAllowed =
-         dateAllowed and (includeOpenCandle or barstate.isconfirmed)
+         validDateRange and
+         dateAllowed and
+         (includeOpenCandle or barstate.isconfirmed)
 
-    float greenValue = candleAllowed and close > open ? 1.0 : 0.0
-    float redValue   = candleAllowed and close < open ? 1.0 : 0.0
-    float dojiValue  = candleAllowed and close == open ? 1.0 : 0.0
+    float greenValue =
+         candleAllowed and close > open ? 1.0 : 0.0
+
+    float redValue =
+         candleAllowed and close < open ? 1.0 : 0.0
+
+    float dojiValue =
+         candleAllowed and close == open ? 1.0 : 0.0
 
     int greenTotal = int(ta.cum(greenValue))
     int redTotal   = int(ta.cum(redValue))
@@ -125,19 +162,34 @@ f_countCandles() =>
 // Helper functions
 //──────────────────────────────────────────────────────────────────────────────
 
-f_total(int greenCount, int redCount, int dojiCount) =>
+f_total(
+     int greenCount,
+     int redCount,
+     int dojiCount
+) =>
     greenCount + redCount + dojiCount
 
-f_percent(int value, int totalCount) =>
-    totalCount > 0 ? value * 100.0 / totalCount : 0.0
+f_percent(
+     int value,
+     int totalCount
+) =>
+    totalCount > 0 ?
+         value * 100.0 / totalCount :
+         0.0
 
-f_countText(int value, int totalCount) =>
+f_countText(
+     int value,
+     int totalCount
+) =>
     str.tostring(value, "#,###") +
      " (" +
      str.tostring(f_percent(value, totalCount), "#.##") +
      "%)"
 
-f_differenceText(int greenCount, int redCount) =>
+f_differenceText(
+     int greenCount,
+     int redCount
+) =>
     int difference = greenCount - redCount
 
     difference > 0 ?
@@ -148,22 +200,24 @@ f_differenceText(int greenCount, int redCount) =>
 
 //──────────────────────────────────────────────────────────────────────────────
 // Table setup
-// Six columns are always created.
-// The doji column is hidden when the input is disabled.
 //──────────────────────────────────────────────────────────────────────────────
 
 var table resultsTable = table.new(
      tablePosition,
      6,
-     7,
+     8,
      border_width = 1
 )
 
 //──────────────────────────────────────────────────────────────────────────────
-// Table helper functions
+// Table functions
 //──────────────────────────────────────────────────────────────────────────────
 
-f_headerCell(int columnNumber, int rowNumber, string cellText) =>
+f_headerCell(
+     int columnNumber,
+     int rowNumber,
+     string cellText
+) =>
     table.cell(
          resultsTable,
          columnNumber,
@@ -198,7 +252,15 @@ f_drawRow(
      int redCount,
      int dojiCount
 ) =>
-    int totalCount = f_total(greenCount, redCount, dojiCount)
+    int totalCount =
+         f_total(greenCount, redCount, dojiCount)
+
+    color differenceColor =
+         greenCount > redCount ?
+             color.new(color.green, 75) :
+         redCount > greenCount ?
+             color.new(color.red, 75) :
+             color.new(color.gray, 70)
 
     f_dataCell(
          0,
@@ -241,11 +303,6 @@ f_drawRow(
              color.white
         )
 
-        color differenceColor =
-             greenCount > redCount ? color.new(color.green, 75) :
-             redCount > greenCount ? color.new(color.red, 75) :
-             color.new(color.gray, 70)
-
         f_dataCell(
              5,
              rowNumber,
@@ -255,7 +312,6 @@ f_drawRow(
         )
 
     else
-        // Doji column is replaced by the total column.
         f_dataCell(
              3,
              rowNumber,
@@ -263,11 +319,6 @@ f_drawRow(
              color.new(color.blue, 80),
              color.white
         )
-
-        color differenceColor =
-             greenCount > redCount ? color.new(color.green, 75) :
-             redCount > greenCount ? color.new(color.red, 75) :
-             color.new(color.gray, 70)
 
         f_dataCell(
              4,
@@ -277,7 +328,6 @@ f_drawRow(
              color.white
         )
 
-        // Clear unused sixth column.
         f_dataCell(
              5,
              rowNumber,
@@ -296,9 +346,10 @@ if barstate.islast
          start_column = 0,
          start_row = 0,
          end_column = 5,
-         end_row = 6
+         end_row = 7
     )
 
+    // Title
     table.cell(
          resultsTable,
          0,
@@ -317,10 +368,11 @@ if barstate.islast
          0
     )
 
+    // Counting mode
     string periodText =
          countMode == "All available history" ?
-         "Period: All available TradingView history" :
-         "Period: From " + str.format_time(startDate, "yyyy-MM-dd", "UTC")
+             "Period: All available TradingView history" :
+             "Period: Selected date range"
 
     table.cell(
          resultsTable,
@@ -340,20 +392,92 @@ if barstate.islast
          1
     )
 
-    f_headerCell(0, 2, "Timeframe")
-    f_headerCell(1, 2, "Green")
-    f_headerCell(2, 2, "Red")
+    // Date range
+    string rangeText =
+         countMode == "All available history" ?
+             "No custom date restrictions" :
+         validDateRange ?
+             str.format_time(
+                  startDate,
+                  "yyyy-MM-dd HH:mm",
+                  "UTC"
+             ) +
+             " UTC → " +
+             str.format_time(
+                  endDate,
+                  "yyyy-MM-dd HH:mm",
+                  "UTC"
+             ) +
+             " UTC" :
+             "ERROR: Start date must be before end date"
+
+    color rangeBackground =
+         validDateRange or
+         countMode == "All available history" ?
+             color.rgb(30, 30, 30) :
+             color.rgb(120, 25, 25)
+
+    table.cell(
+         resultsTable,
+         0,
+         2,
+         rangeText,
+         text_color = color.white,
+         bgcolor = rangeBackground,
+         text_halign = text.align_center
+    )
+
+    table.merge_cells(
+         resultsTable,
+         0,
+         2,
+         5,
+         2
+    )
+
+    // Column headings
+    f_headerCell(0, 3, "Timeframe")
+    f_headerCell(1, 3, "Green")
+    f_headerCell(2, 3, "Red")
 
     if showDojis
-        f_headerCell(3, 2, "Doji")
-        f_headerCell(4, 2, "Total")
-        f_headerCell(5, 2, "Advantage")
+        f_headerCell(3, 3, "Doji")
+        f_headerCell(4, 3, "Total")
+        f_headerCell(5, 3, "Advantage")
     else
-        f_headerCell(3, 2, "Total")
-        f_headerCell(4, 2, "Advantage")
-        f_headerCell(5, 2, "")
+        f_headerCell(3, 3, "Total")
+        f_headerCell(4, 3, "Advantage")
+        f_headerCell(5, 3, "")
 
-    f_drawRow(3, "15 Minute", green15m, red15m, doji15m)
-    f_drawRow(4, "4 Hour", green4h, red4h, doji4h)
-    f_drawRow(5, "Daily", green1d, red1d, doji1d)
-    f_drawRow(6, "Weekly", green1w, red1w, doji1w)
+    // Timeframe results
+    f_drawRow(
+         4,
+         "15 Minute",
+         green15m,
+         red15m,
+         doji15m
+    )
+
+    f_drawRow(
+         5,
+         "4 Hour",
+         green4h,
+         red4h,
+         doji4h
+    )
+
+    f_drawRow(
+         6,
+         "Daily",
+         green1d,
+         red1d,
+         doji1d
+    )
+
+    f_drawRow(
+         7,
+         "Weekly",
+         green1w,
+         red1w,
+         doji1w
+    )
